@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta
+        name="description"
+        content="Healthy Recipe Box — a nostalgic retro recipe application for delicious, balanced meals."
+    >
+
+    <title>Recipe Box.exe</title>
+
+    <!-- Retro system-style fonts -->
+    <link rel="stylesheet" href="style.css">
+    <script src="javascript.js"></script>
+</head>
+
+<body>
+    <!-- =========================================================
+         popup muscles
+    ========================================================== -->
+
+    <div id="muscle-popup" class="muscle-overlay">
+    <div class="muscle-window">
+
+        <div class="muscle-titlebar">
+            <span>💪 Healthy Recipe Box</span>
+        </div>
+
+        <div class="muscle-content">
+
+            <img src="https://cdn3.emoji.gg/emojis/3162_tanjirousecret.png"
+                 width="100"
+                 height="100"
+                 alt="tanjirousecret">
+
+            <h2>Lets get that muscleeeeees</h2>
+
+            <div class="muscle-buttons">
+                <button id="muscle-yes">YES 💪</button>
+                <button id="muscle-no">NO ❌</button>
+            </div>
+
+        </div>
+
+    </div>
+    </div>
+    <!-- =========================================================
+         DESKTOP
+    ========================================================== -->
+
+    <main class="desktop">
+
+        <!-- =====================================================
+             BROWSER WINDOW
+        ====================================================== -->
+
+        <section class="browser-window">
+
+            <!-- Browser Title Bar -->
+            <header class="title-bar">
+
+                <div class="title-bar-left">
+                    <span class="app-icon">🍴</span>
+                    <span class="window-title">
+                        Recipe Box - Microsoft Internet Explorer
+                    </span>
+                </div>
+
+                <div class="window-controls">
+                    <button aria-label="Minimize">_</button>
+                    <button aria-label="Maximize">□</button>
+                    <button aria-label="Close">×</button>
+                </div>
+
+            </header>
+
+
+            <!-- =================================================
+                 BROWSER TOOLBAR
+            ================================================== -->
+
+            <div class="browser-toolbar">
+
+                <div class="browser-navigation">
+
+                    <button class="toolbar-button">
+                        <span>←</span>
+                        Back
+                    </button>
+
+                    <button class="toolbar-button">
+                        <span>→</span>
+                        Forward
+                    </button>
+
+                    <button class="toolbar-button">
+                        ↻
+                    </button>
+
+                </div>
+
+
+                <div class="address-bar-wrapper">
+
+                    <span class="address-label">Address</span>
+
+                    <div class="address-bar">
+                        <span class="address-icon">🌐</span>
+                        <span>http://www.recipebox.local</span>
+                    </div>
+
+                </div>
+
+
+                <button class="toolbar-button home-button">
+                    🏠 Home
+                </button>
+
+            </div>
+
+
+            <!-- =================================================
+                 BROWSER MENU
+            ================================================== -->
+
+            <nav class="browser-menu" aria-label="Main navigation">
+
+                <a href="#home">File</a>
+                <a href="#recipes">Edit</a>
+                <a href="#recipes">View</a>
+                <a href="#recipes">Favorites</a>
+                <a href="#about">Tools</a>
+                <a href="#about">Help</a>
+
+            </nav>
+
+
+            <!-- =================================================
+                 WEBSITE CONTENT
+            ================================================== -->
+
+            <div class="website-window">
+
+                <!-- =================================================
+                     WEBSITE HEADER
+                ================================================== -->
+
+                <header class="site-header" id="home">
+
+                    <div class="site-logo">
+
+                        <div class="logo-icon">
+                            <a href="https://emoji.gg/emoji/816371-hellokittylove"><img src="https://cdn3.emoji.gg/emojis/816371-hellokittylove.gif" width="64px" height="64px" alt="HelloKittyLove"></a>
+                        </div>
+
+                        <div class="logo-text">
+
+                            <h1>
+                                Recipe Box
+                            </h1>
+
+                            <p>
+                                Delicious food. Simple ingredients. Happy computer.
+                            </p>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="header-status">
+
+                        <span class="status-light"></span>
+
+                        <span>
+                            Recipe Database: ONLINE
+                        </span>
+
+                    </div>
+
+                </header>
+
+
+                <!-- =================================================
+                     MAIN APPLICATION WINDOW
+                ================================================== -->
+
+                <div class="app-layout">
+
+
+                    <!-- =================================================
+                         SIDEBAR
+                    ================================================== -->
+
+                    <aside class="sidebar">
+
+                        <div class="sidebar-window">
+
+                            <div class="panel-title">
+                                <a href="https://emoji.gg/emoji/44305-file-report"><img src="https://cdn3.emoji.gg/emojis/44305-file-report.png" width="32px" height="32px" alt="file_report"></a> Recipe Explorer
+                            </div>
+
+                            <div class="sidebar-content">
+
+                                <p class="sidebar-heading">
+                                    My Recipes
+                                </p>
+
+                                <ul class="recipe-tree">
+
+                                    <li>
+                                        <a href="#savory">
+                                            <img src="https://cdn3.emoji.gg/emojis/44305-file-report.png" width="20px" height="20px" alt="file_report"> Savory Recipes
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a href="#sweet">
+                                            <img src="https://cdn3.emoji.gg/emojis/44305-file-report.png" width="20px" height="20px" alt="file_report"> Sweet Recipes
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a href="#high-protein">
+                                            <img src="https://cdn3.emoji.gg/emojis/44305-file-report.png" width="20px" height="20px" alt="file_report"> High Protein
+                                        </a>
+                                    </li>
+
+                                </ul>
+
+
+                                <hr>
+
+
+                                <p class="sidebar-heading">
+                                    Quick Links
+                                </p>
+
+                                <ul class="quick-links">
+
+                                    <li>
+                                        <a href="#search">
+                                            🔎 Find a Recipe
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a href="#savory">
+                                            ⭐ Popular Recipes
+                                        </a>
+                                    </li>
+
+                                    <li>
+                                        <a href="#about">
+                                            ❓ Help
+                                        </a>
+                                    </li>
+
+                                </ul>
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- Mini Nutrition Box -->
+
+                        <div class="sidebar-window nutrition-help">
+
+                            <div class="panel-title">
+                                📊 Nutrition Guide
+                            </div>
+
+                            <div class="sidebar-content">
+
+                                <p>
+                                    Looking for something specific?
+                                </p>
+
+                                <div class="nutrition-key">
+                                    <span>🔥</span>
+                                    <strong>Calories</strong>
+                                </div>
+
+                                <div class="nutrition-key">
+                                    <span>💪</span>
+                                    <strong>Protein</strong>
+                                </div>
+
+                                <div class="nutrition-key">
+                                    <span>🍞</span>
+                                    <strong>Carbs</strong>
+                                </div>
+
+                                <div class="nutrition-key">
+                                    <span>🥑</span>
+                                    <strong>Fat</strong>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </aside>
+
+
+                    <!-- =================================================
+                         MAIN CONTENT
+                    ================================================== -->
+
+                    <section class="main-content" id="recipes">
+
+
+                        <!-- =================================================
+                             WELCOME WINDOW
+                        ================================================== -->
+
+                        <section class="content-window welcome-window">
+
+                            <div class="panel-title">
+
+                                <span>
+                                    🏠 Welcome to Healthy Recipe Box
+                                </span>
+
+                                <div class="panel-controls">
+                                    <button>_</button>
+                                    <button>□</button>
+                                    <button>×</button>
+                                </div>
+
+                            </div>
+
+
+                            <div class="welcome-content">
+
+                                <div>
+
+                                    <h2>
+                                        Welcome back, chef! <span style="color: rgb(255, 122, 145);">✺◟( • ω • )◞✺</span>
+                                    </h2>
+
+                                    <p>
+                                        Your collection of delicious and nutritious
+                                        recipes is ready.
+                                    </p>
+
+                                    <p>
+                                        Find something tasty without losing track
+                                        of your calories and macros.
+                                    </p>
+
+                                </div>
+
+
+                                <div class="cooker-mascot">
+                                    <img src="https://cdn3.emoji.gg/emojis/993697-korilakkumaegg.gif" width="64px" height="64px" alt="KorilakkumaEgg">
+                                    <span>Let's cook!</span>
+                                </div>
+
+                            </div>
+
+                        </section>
+
+
+                        <!-- =================================================
+                             SEARCH & FILTER
+                        ================================================== -->
+
+                        <section
+                            class="content-window search-window"
+                            id="search"
+                        >
+
+                            <div class="panel-title">
+
+                                🔎 Recipe Finder
+
+                            </div>
+
+
+                            <div class="search-content">
+
+                                <div class="search-row">
+
+                                    <label for="recipe-search">
+                                        Search:
+                                    </label>
+
+                                    <input
+                                        type="search"
+                                        id="recipe-search"
+                                        name="recipe-search"
+                                        placeholder="Type a recipe name..."
+                                    >
+
+                                    <button class="retro-button">
+                                        Search
+                                    </button>
+
+                                </div>
+
+
+                                <div class="filter-row">
+
+                                    <span class="filter-label">
+                                        Filters:
+                                    </span>
+
+                                    <button class="filter-button active">
+                                        All
+                                    </button>
+
+                                    <button class="filter-button">
+                                        🥗 Savory
+                                    </button>
+
+                                    <button class="filter-button">
+                                        🍰 Sweet
+                                    </button>
+
+                                    <button class="filter-button">
+                                        💪 High Protein
+                                    </button>
+
+                                </div>
+
+
+                                <div class="filter-row">
+
+                                    <label for="calorie-filter">
+                                        Calories:
+                                    </label>
+
+                                    <select id="calorie-filter">
+
+                                        <option>
+                                            Any amount
+                                        </option>
+
+                                        <option>
+                                            Under 300 kcal
+                                        </option>
+
+                                        <option>
+                                            Under 400 kcal
+                                        </option>
+
+                                        <option>
+                                            Under 500 kcal
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+                            </div>
+
+                        </section>
+
+
+                        <!-- =================================================
+                             SAVORY RECIPES
+                        ================================================== -->
+
+                        <section
+                            class="recipe-section"
+                            id="savory"
+                        >
+
+                            <div class="section-heading">
+
+                                <div>
+                                    <span class="section-icon">🥗</span>
+
+                                    <div>
+                                        <h2>
+                                            Savory Recipes
+                                        </h2>
+
+                                        <p>
+                                            Healthy meals for lunch & dinner
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <span class="recipe-count">
+                                    04 recipes
+                                </span>
+
+                            </div>
+
+
+                            <div class="recipe-grid">
+
+
+                                <!-- =================================================
+                                     SAVORY RECIPE 1
+                                ================================================== -->
+
+                                <article class="recipe-card">
+
+                                    <div class="recipe-image">
+
+                                        <img
+                                            src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80"
+                                            alt="Healthy salad bowl with vegetables and grains"
+                                        >
+
+                                        <span class="recipe-category">
+                                            🥗 SAVORY
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="recipe-card-body">
+
+                                        <h3>
+                                            Mediterranean Power Bowl
+                                        </h3>
+
+                                        <p class="recipe-description">
+                                            A colorful bowl packed with chickpeas,
+                                            fresh vegetables, quinoa and creamy
+                                            yogurt dressing.
+                                        </p>
+
+
+                                        <div class="recipe-meta">
+
+                                            <span>
+                                                ⏱ 20 min
+                                            </span>
+
+                                            <span>
+                                                👥 2 servings
+                                            </span>
+
+                                            <span>
+                                                ⭐ Easy
+                                            </span>
+
+                                        </div>
+
+
+                                        <!-- Nutrition Label -->
+
+                                        <div class="nutrition-label">
+
+                                            <div class="nutrition-header">
+                                                NUTRITION FACTS
+                                            </div>
+
+                                            <div class="nutrition-serving">
+                                                Per serving
+                                            </div>
+
+                                            <div class="nutrition-calories">
+                                                <span>Calories</span>
+                                                <strong>420</strong>
+                                                <small>kcal</small>
+                                            </div>
+
+                                            <div class="nutrition-divider"></div>
+
+                                            <div class="nutrition-row">
+
+                                                <span>
+                                                    Protein
+                                                </span>
+
+                                                <strong>
+                                                    24g
+                                                </strong>
+
+                                            </div>
+
+                                            <div class="nutrition-row">
+
+                                                <span>
+                                                    Carbohydrates
+                                                </span>
+
+                                                <strong>
+                                                    48g
+                                                </strong>
+
+                                            </div>
+
+                                            <div class="nutrition-row">
+
+                                                <span>
+                                                    Fat
+                                                </span>
+
+                                                <strong>
+                                                    16g
+                                                </strong>
+
+                                            </div>
+
+                                            <div class="nutrition-row">
+
+                                                <span>
+                                                    Fiber
+                                                </span>
+
+                                                <strong>
+                                                    10g
+                                                </strong>
+
+                                            </div>
+
+                                        </div>
+
+
+                                        <!-- Ingredients -->
+
+                                        <details class="recipe-details">
+
+                                            <summary>
+                                                🧾 Ingredients
+                                            </summary>
+
+                                            <ul>
+
+                                                <li>100g cooked quinoa</li>
+                                                <li>120g chickpeas</li>
+                                                <li>1 cucumber</li>
+                                                <li>100g cherry tomatoes</li>
+                                                <li>40g feta cheese</li>
+                                                <li>Greek yogurt</li>
+                                                <li>Lemon juice</li>
+                                                <li>Fresh herbs</li>
+
+                                            </ul>
+
+                                        </details>
+
+
+                                        <!-- Instructions -->
+
+                                        <details class="recipe-details">
+
+                                            <summary>
+                                                📋 Instructions
+                                            </summary>
+
+                                            <ol>
+
+                                                <li>
+                                                    Cook quinoa according to
+                                                    package instructions.
+                                                </li>
+
+                                                <li>
+                                                    Chop cucumber and tomatoes.
+                                                </li>
+
+                                                <li>
+                                                    Add quinoa and chickpeas
+                                                    to a bowl.
+                                                </li>
+
+                                                <li>
+                                                    Top with vegetables and feta.
+                                                </li>
+
+                                                <li>
+                                                    Mix yogurt with lemon juice
+                                                    and herbs.
+                                                </li>
+
+                                                <li>
+                                                    Drizzle dressing over the bowl
+                                                    and serve.
+                                                </li>
+
+                                            </ol>
+
+                                        </details>
+
+                                    </div>
+
+                                </article>
+
+
+                                <!-- =================================================
+                                     SAVORY RECIPE 2
+                                ================================================== -->
+
+                                <article class="recipe-card">
+
+                                    <div class="recipe-image">
+
+                                        <img
+                                            src="https://images.unsplash.com/photo-1532550907401-a500c9a57435?auto=format&fit=crop&w=800&q=80"
+                                            alt="Healthy chicken meal with vegetables"
+                                        >
+
+                                        <span class="recipe-category">
+                                            🥗 SAVORY
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="recipe-card-body">
+
+                                        <h3>
+                                            Garlic Chicken & Veggies
+                                        </h3>
+
+                                        <p class="recipe-description">
+                                            Juicy garlic chicken served with
+                                            roasted vegetables and crispy
+                                            baby potatoes.
+                                        </p>
+
+
+                                        <div class="recipe-meta">
+
+                                            <span>
+                                                ⏱ 35 min
+                                            </span>
+
+                                            <span>
+                                                👥 2 servings
+                                            </span>
+
+                                            <span>
+                                                ⭐ Easy
+                                            </span>
+
+                                        </div>
+
+
+                                        <div class="nutrition-label">
+
+                                            <div class="nutrition-header">
+                                                NUTRITION FACTS
+                                            </div>
+
+                                            <div class="nutrition-serving">
+                                                Per serving
+                                            </div>
+
+                                            <div class="nutrition-calories">
+                                                <span>Calories</span>
+                                                <strong>465</strong>
+                                                <small>kcal</small>
+                                            </div>
+
+                                            <div class="nutrition-divider"></div>
+
+                                            <div class="nutrition-row">
+                                                <span>Protein</span>
+                                                <strong>48g</strong>
+                                            </div>
+
+                                            <div class="nutrition-row">
+                                                <span>Carbohydrates</span>
+                                                <strong>31g</strong>
+                                            </div>
+
+                                            <div class="nutrition-row">
+                                                <span>Fat</span>
+                                                <strong>17g</strong>
+                                            </div>
+
+                                            <div class="nutrition-row">
+                                                <span>Fiber</span>
+                                                <strong>7g</strong>
+                                            </div>
+
+                                        </div>
+
+
+                                        <details class="recipe-details">
+
+                                            <summary>
+                                                🧾 Ingredients
+                                            </summary>
+
+                                            <ul>
+                                                <li>250g chicken breast</li>
+                                                <li>200g baby potatoes</li>
+                                                <li>1 zucchini</li>
+                                                <li>1 bell pepper</li>
+                                                <li>3 garlic cloves</li>
+                                                <li>1 tbsp olive oil</li>
+                                                <li>Italian herbs</li>
+                                            </ul>
+
+                                        </details>
+
+
+                                        <details class="recipe-details">
+
+                                            <summary>
+                                                📋 Instructions
+                                            </summary>
+
+                                            <ol>
+
+                                                <li>
+                                                    Preheat oven to 200°C.
+                                                </li>
+
+                                                <li>
+                                                    Chop potatoes and vegetables.
+                                                </li>
+
+                                                <li>
+                                                    Season chicken with garlic
+                                                    and herbs.
+                                                </li>
+
+                                                <li>
+                                                    Place everything on a baking
+                                                    tray.
+                                                </li>
+
+                                                <li>
+                                                    Roast for approximately
+                                                    30–35 minutes.
+                                                </li>
+
+                                            </ol>
+
+                                        </details>
+
+                                    </div>
+
+                                </article>
+
+
+                            </div>
+
+                        </section>
+
+
+                        <!-- =================================================
+                             SWEET RECIPES
+                        ================================================== -->
+
+                        <section
+                            class="recipe-section"
+                            id="sweet"
+                        >
+
+                            <div class="section-heading">
+
+                                <div>
+
+                                    <span class="section-icon">
+                                        🍰
+                                    </span>
+
+                                    <div>
+
+                                        <h2>
+                                            Sweet Recipes
+                                        </h2>
+
+                                        <p>
+                                            Healthier treats for your sweet tooth
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <span class="recipe-count">
+                                    04 recipes
+                                </span>
+
+                            </div>
+
+
+                            <div class="recipe-grid">
+
+
+                                <!-- =================================================
+                                     SWEET RECIPE 1
+                                ================================================== -->
+
+                                <article class="recipe-card">
+
+                                    <div class="recipe-image">
+
+                                        <img
+                                            src="https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?auto=format&fit=crop&w=800&q=80"
+                                            alt="Yogurt bowl with berries and granola"
+                                        >
+
+                                        <span class="recipe-category sweet">
+                                            🍰 SWEET
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="recipe-card-body">
+
+                                        <h3>
+                                            Berry Protein Yogurt Bowl
+                                        </h3>
+
+                                        <p class="recipe-description">
+                                            Creamy Greek yogurt topped with
+                                            berries, crunchy granola and
+                                            peanut butter.
+                                        </p>
+
+
+                                        <div class="recipe-meta">
+
+                                            <span>
+                                                ⏱ 5 min
+                                            </span>
+
+                                            <span>
+                                                👥 1 serving
+                                            </span>
+
+                                            <span>
+                                                ⭐ Easy
+                                            </span>
+
+                                        </div>
+
+
+                                        <div class="nutrition-label sweet-label">
+
+                                            <div class="nutrition-header">
+                                                NUTRITION FACTS
+                                            </div>
+
+                                            <div class="nutrition-serving">
+                                                Per serving
+                                            </div>
+
+                                            <div class="nutrition-calories">
+                                                <span>Calories</span>
+                                                <strong>310</strong>
+                                                <small>kcal</small>
+                                            </div>
+
+                                            <div class="nutrition-divider"></div>
+
+                                            <div class="nutrition-row">
+                                                <span>Protein</span>
+                                                <strong>25g</strong>
+                                            </div>
+
+                                            <div class="nutrition-row">
+                                                <span>Carbohydrates</span>
+                                                <strong>35g</strong>
+                                            </div>
+
+                                            <div class="nutrition-row">
+                                                <span>Fat</span>
+                                                <strong>8g</strong>
+                                            </div>
+
+                                            <div class="nutrition-row">
+                                                <span>Fiber</span>
+                                                <strong>6g</strong>
+                                            </div>
+
+                                        </div>
+
+
+                                        <details class="recipe-details">
+
+                                            <summary>
+                                                🧾 Ingredients
+                                            </summary>
+
+                                            <ul>
+                                                <li>200g Greek yogurt</li>
+                                                <li>100g mixed berries</li>
+                                                <li>30g granola</li>
+                                                <li>15g peanut butter</li>
+                                                <li>1 tsp honey</li>
+                                            </ul>
+
+                                        </details>
+
+
+                                        <details class="recipe-details">
+
+                                            <summary>
+                                                📋 Instructions
+                                            </summary>
+
+                                            <ol>
+
+                                                <li>
+                                                    Add Greek yogurt to a bowl.
+                                                </li>
+
+                                                <li>
+                                                    Add berries and granola.
+                                                </li>
+
+                                                <li>
+                                                    Drizzle with peanut butter
+                                                    and honey.
+                                                </li>
+
+                                                <li>
+                                                    Enjoy immediately.
+                                                </li>
+
+                                            </ol>
+
+                                        </details>
+
+                                    </div>
+
+                                </article>
+
+
+                                <!-- =================================================
+                                     SWEET RECIPE 2
+                                ================================================== -->
+
+                                <article class="recipe-card">
+
+                                    <div class="recipe-image">
+
+                                        <img
+                                            src="https://images.unsplash.com/photo-1578985545062-69928b1d9587?auto=format&fit=crop&w=800&q=80"
+                                            alt="Healthy chocolate cake"
+                                        >
+
+                                        <span class="recipe-category sweet">
+                                            🍰 SWEET
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="recipe-card-body">
+
+                                        <h3>
+                                            Chocolate Protein Cake
+                                        </h3>
+
+                                        <p class="recipe-description">
+                                            A soft chocolate cake with extra
+                                            protein and a rich chocolate flavor.
+                                        </p>
+
+
+                                        <div class="recipe-meta">
+
+                                            <span>
+                                                ⏱ 30 min
+                                            </span>
+
+                                            <span>
+                                                👥 6 servings
+                                            </span>
+
+                                            <span>
+                                                ⭐ Medium
+                                            </span>
+
+                                        </div>
+
+
+                                        <div class="nutrition-label sweet-label">
+
+                                            <div class="nutrition-header">
+                                                NUTRITION FACTS
+                                            </div>
+
+                                            <div class="nutrition-serving">
+                                                Per serving
+                                            </div>
+
+                                            <div class="nutrition-calories">
+                                                <span>Calories</span>
+                                                <strong>245</strong>
+                                                <small>kcal</small>
+                                            </div>
+
+                                            <div class="nutrition-divider"></div>
+
+                                            <div class="nutrition-row">
+                                                <span>Protein</span>
+                                                <strong>18g</strong>
+                                            </div>
+
+                                            <div class="nutrition-row">
+                                                <span>Carbohydrates</span>
+                                                <strong>28g</strong>
+                                            </div>
+
+                                            <div class="nutrition-row">
+                                                <span>Fat</span>
+                                                <strong>8g</strong>
+                                            </div>
+
+                                            <div class="nutrition-row">
+                                                <span>Fiber</span>
+                                                <strong>4g</strong>
+                                            </div>
+
+                                        </div>
+
+
+                                        <details class="recipe-details">
+
+                                            <summary>
+                                                🧾 Ingredients
+                                            </summary>
+
+                                            <ul>
+                                                <li>2 bananas</li>
+                                                <li>2 eggs</li>
+                                                <li>60g oat flour</li>
+                                                <li>30g cocoa powder</li>
+                                                <li>40g protein powder</li>
+                                                <li>1 tsp baking powder</li>
+                                                <li>Dark chocolate chips</li>
+                                            </ul>
+
+                                        </details>
+
+
+                                        <details class="recipe-details">
+
+                                            <summary>
+                                                📋 Instructions
+                                            </summary>
+
+                                            <ol>
+
+                                                <li>
+                                                    Preheat oven to 180°C.
+                                                </li>
+
+                                                <li>
+                                                    Mash bananas in a bowl.
+                                                </li>
+
+                                                <li>
+                                                    Add eggs and mix well.
+                                                </li>
+
+                                                <li>
+                                                    Add remaining ingredients.
+                                                </li>
+
+                                                <li>
+                                                    Pour into a small cake tin.
+                                                </li>
+
+                                                <li>
+                                                    Bake for approximately
+                                                    25–30 minutes.
+                                                </li>
+
+                                            </ol>
+
+                                        </details>
+
+                                    </div>
+
+                                </article>
+
+                            </div>
+
+                        </section>
+
+
+                        <!-- =================================================
+                             HIGH PROTEIN RECIPES
+                        ================================================== -->
+
+                        <section
+                            class="recipe-section"
+                            id="high-protein"
+                        >
+
+                            <div class="section-heading">
+
+                                <div>
+                                    <span class="section-icon">💪</span>
+
+                                    <div>
+                                        <h2>
+                                            High Protein
+                                        </h2>
+
+                                        <p>
+                                            Fuel-focused meals with plenty of protein
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <span class="recipe-count">
+                                    01 recipe
+                                </span>
+
+                            </div>
+
+
+                            <div class="recipe-grid">
+
+                                <article class="recipe-card">
+
+                                    <div class="recipe-image">
+
+                                        <img
+                                            src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80"
+                                            alt="High protein grilled chicken bowl"
+                                        >
+
+                                        <span class="recipe-category high-protein">
+                                            💪 HIGH PROTEIN
+                                        </span>
+
+                                    </div>
+
+
+                                    <div class="recipe-card-body">
+
+                                        <h3>
+                                            Chicken Quinoa Power Bowl
+                                        </h3>
+
+                                        <p class="recipe-description">
+                                            A filling bowl of grilled chicken,
+                                            quinoa, greens and a bright lemon dressing.
+                                        </p>
+
+
+                                        <div class="recipe-meta">
+
+                                            <span>
+                                                ⏱ 25 min
+                                            </span>
+
+                                            <span>
+                                                👥 2 servings
+                                            </span>
+
+                                            <span>
+                                                ⭐ Easy
+                                            </span>
+
+                                        </div>
+
+
+                                        <div class="nutrition-label">
+
+                                            <div class="nutrition-header">
+                                                NUTRITION FACTS
+                                            </div>
+
+                                            <div class="nutrition-serving">
+                                                Per serving
+                                            </div>
+
+                                            <div class="nutrition-calories">
+                                                <span>Calories</span>
+                                                <strong>390</strong>
+                                                <small>kcal</small>
+                                            </div>
+
+                                            <div class="nutrition-divider"></div>
+
+                                            <div class="nutrition-row">
+                                                <span>Protein</span>
+                                                <strong>36g</strong>
+                                            </div>
+
+                                            <div class="nutrition-row">
+                                                <span>Carbohydrates</span>
+                                                <strong>34g</strong>
+                                            </div>
+
+                                            <div class="nutrition-row">
+                                                <span>Fat</span>
+                                                <strong>12g</strong>
+                                            </div>
+
+                                            <div class="nutrition-row">
+                                                <span>Fiber</span>
+                                                <strong>8g</strong>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </article>
+
+                            </div>
+
+                        </section>
+
+
+                        <!-- =================================================
+                             ABOUT
+                        ================================================== -->
+
+                        <section
+                            class="content-window about-window"
+                            id="about"
+                        >
+
+                            <div class="panel-title">
+                                💾 About Healthy Recipe Box
+                            </div>
+
+                            <div class="about-content">
+
+                                <div class="about-icon">
+                                    🍎
+                                </div>
+
+                                <div>
+
+                                    <h2>
+                                        Healthy Recipe Box v1.0
+                                    </h2>
+
+                                    <p>
+                                        Your friendly neighborhood recipe
+                                        database from the year 2003.
+                                    </p>
+
+                                    <p>
+                                        Made for people who love good food
+                                        and want to keep an eye on their
+                                        nutrition.
+                                    </p>
+
+                                    <p class="copyright">
+                                        © 2003–2026 Healthy Recipe Box
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </section>
+
+
+                    </section>
+
+                </div>
+
+
+                <!-- =================================================
+                     STATUS BAR
+                ================================================== -->
+
+                <footer class="status-bar">
+
+                    <div class="status-left">
+
+                        <span class="status-icon">
+                            🌐
+                        </span>
+
+                        <span>
+                            Done
+                        </span>
+
+                    </div>
+
+                    <div class="status-center">
+                        Healthy Recipe Box.exe
+                    </div>
+
+                    <div class="status-right">
+                        Internet
+                    </div>
+
+                </footer>
+
+            </div>
+
+        </section>
+
+
+        <!-- =====================================================
+             WINDOWS TASKBAR
+        ====================================================== -->
+
+        <footer class="taskbar">
+
+            <button class="start-button">
+
+                <span class="windows-logo">
+                    🪟
+                </span>
+
+                <strong>
+                    Start
+                </strong>
+
+            </button>
+
+
+            <div class="taskbar-divider"></div>
+
+
+            <div class="taskbar-app active">
+
+                🍎
+
+                <span>
+                    Healthy Recipe Box
+                </span>
+
+            </div>
+
+
+            <div class="taskbar-spacer"></div>
+
+
+            <div class="system-tray">
+
+                <span>
+                    🔊
+                </span>
+
+                <span>
+                    🌐
+                </span>
+
+                <span>
+                    18:20
+                </span>
+
+            </div>
+
+        </footer>
+
+    </main>
+
+</body>
+</html>s
