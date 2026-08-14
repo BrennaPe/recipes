@@ -12,12 +12,212 @@
 
     <!-- Retro system-style fonts -->
     <link rel="stylesheet" href="style.css">
+
+    <!-- =========================================================
+         FIREBASE SETUP
+         Initializes the Firebase web app and exposes the app,
+         analytics, and Firestore instance so the project is ready
+         to connect to the configured database.
+    ========================================================== -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyDnPbG1EsmmMWVVQA1W2h9nnfgN_JLG5c8",
+            authDomain: "recipes-eaa45.firebaseapp.com",
+            projectId: "recipes-eaa45",
+            storageBucket: "recipes-eaa45.firebasestorage.app",
+            messagingSenderId: "597807539706",
+            appId: "1:597807539706:web:8a374fb8b315f5db1e7043",
+            measurementId: "G-C80L2QYBFR"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        window.firebaseApp = firebase.app();
+        window.firebaseAnalytics = firebase.analytics();
+        window.firebaseDb = firebase.firestore();
+        window.firebaseStorage = firebase.storage();
+    </script>
+
     <script src="javascript.js"></script>
 </head>
 
 <body>
+
     <!-- =========================================================
-         popup muscles
+         ADD RECIPE MODAL
+         Opens when the user clicks the Add Recipe quick link.
+         This keeps the site in a single page while still providing
+         a proper form for creating a recipe.
+    ========================================================== -->
+    <div id="add-recipe-modal" class="add-recipe-modal hidden" aria-hidden="true">
+        <div class="add-recipe-window">
+
+            <div class="add-recipe-titlebar">
+                <span>🍽️ Add New Recipe</span>
+                <button type="button" id="close-recipe-button" class="add-recipe-close" aria-label="Close add recipe form">×</button>
+            </div>
+
+            <form id="add-recipe-form" class="add-recipe-form" novalidate>
+
+                <div class="add-recipe-form-body">
+
+                    <!-- =================================================
+                         IMAGE UPLOAD
+                         Lets the user either upload a local file or paste
+                         a URL. Uploaded files are resized and compressed so
+                         they stay light enough for the browser.
+                    ================================================== -->
+                    <div class="form-section">
+                        <h3>Recipe Image</h3>
+
+                        <div class="image-upload-row">
+                            <label class="image-upload-box" for="recipe-image-upload">
+                                <input type="file" id="recipe-image-upload" accept="image/*">
+                                <span>Choose image</span>
+                            </label>
+
+                            <div class="image-url-field">
+                                <label for="recipe-image-url">Image URL</label>
+                                <input
+                                    type="url"
+                                    id="recipe-image-url"
+                                    placeholder="https://example.com/recipe.jpg"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="image-preview-wrap">
+                            <img id="recipe-image-preview" src="" alt="Recipe preview" class="hidden">
+                        </div>
+                    </div>
+
+                    <!-- =================================================
+                         RECIPE INFORMATION
+                         Basic recipe details that help describe the dish.
+                    ================================================== -->
+                    <div class="form-section">
+                        <h3>Recipe Information</h3>
+
+                        <div class="form-grid">
+                            <div class="field-group full-width">
+                                <label for="recipe-name">Recipe Name</label>
+                                <input type="text" id="recipe-name" name="recipe-name" placeholder="e.g. Lemon Herb Bowl">
+                            </div>
+
+                            <div class="field-group full-width">
+                                <label for="recipe-description">Description</label>
+                                <textarea id="recipe-description" name="recipe-description" rows="3" placeholder="Short summary of the recipe"></textarea>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="recipe-category">Category</label>
+                                <select id="recipe-category" name="recipe-category">
+                                    <option value="">Select category</option>
+                                    <option value="savory">Savory</option>
+                                    <option value="sweet">Sweet</option>
+                                    <option value="high-protein">High Protein</option>
+                                </select>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="recipe-prep-time">Preparation Time</label>
+                                <input type="text" id="recipe-prep-time" name="recipe-prep-time" placeholder="25 min">
+                            </div>
+
+                            <div class="field-group">
+                                <label for="recipe-servings">Servings</label>
+                                <input type="number" id="recipe-servings" name="recipe-servings" min="1" placeholder="2">
+                            </div>
+
+                            <div class="field-group">
+                                <label for="recipe-difficulty">Difficulty</label>
+                                <select id="recipe-difficulty" name="recipe-difficulty">
+                                    <option value="">Select difficulty</option>
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
+                            </div>
+
+                            <div class="field-group">
+                                <label for="recipe-calories">Calories</label>
+                                <input type="number" id="recipe-calories" name="recipe-calories" min="0" placeholder="420">
+                            </div>
+
+                            <div class="field-group">
+                                <label for="recipe-protein">Protein (g)</label>
+                                <input type="number" id="recipe-protein" name="recipe-protein" min="0" placeholder="24">
+                            </div>
+
+                            <div class="field-group">
+                                <label for="recipe-carbs">Carbohydrates (g)</label>
+                                <input type="number" id="recipe-carbs" name="recipe-carbs" min="0" placeholder="30">
+                            </div>
+
+                            <div class="field-group">
+                                <label for="recipe-fat">Fat (g)</label>
+                                <input type="number" id="recipe-fat" name="recipe-fat" min="0" placeholder="12">
+                            </div>
+
+                            <div class="field-group">
+                                <label for="recipe-fiber">Fiber (g)</label>
+                                <input type="number" id="recipe-fiber" name="recipe-fiber" min="0" placeholder="8">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- =================================================
+                         INGREDIENTS
+                         Users can add, edit, and remove ingredients before
+                         saving a recipe.
+                    ================================================== -->
+                    <div class="form-section">
+                        <h3>Ingredients</h3>
+
+                        <ul id="ingredient-list" class="dynamic-list"></ul>
+
+                        <button type="button" id="add-ingredient-button" class="mini-button">
+                            + Add Ingredient
+                        </button>
+                    </div>
+
+                    <!-- =================================================
+                         INSTRUCTIONS
+                         Similar to ingredients, this section allows the user
+                         to build a step-by-step cooking guide.
+                    ================================================== -->
+                    <div class="form-section">
+                        <h3>Instructions</h3>
+
+                        <ol id="instruction-list" class="dynamic-list dynamic-list-steps"></ol>
+
+                        <button type="button" id="add-instruction-button" class="mini-button">
+                            + Add Step
+                        </button>
+                    </div>
+
+                    <div id="add-recipe-error" class="form-error" aria-live="polite"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" id="cancel-recipe-button" class="secondary-button">
+                        Cancel
+                    </button>
+                    <button type="submit" class="retro-button">
+                        Save Recipe
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         popup muscles                  
     ========================================================== -->
 
     <div id="muscle-popup" class="muscle-overlay">
@@ -257,6 +457,13 @@
                                         </a>
                                     </li>
 
+                                    <!-- Quick-actions menu for adding a new recipe. -->
+                                    <li>
+                                        <button id="add-recipe-button" type="button" class="quick-link-button">
+                                            ➕ Add Recipe
+                                        </button>
+                                    </li>
+
                                 </ul>
 
                             </div>
@@ -408,19 +615,19 @@
                                         Filters:
                                     </span>
 
-                                    <button class="filter-button active">
+                                    <button class="filter-button active" data-filter-category="all" type="button">
                                         All
                                     </button>
 
-                                    <button class="filter-button">
+                                    <button class="filter-button" data-filter-category="savory" type="button">
                                         🥗 Savory
                                     </button>
 
-                                    <button class="filter-button">
+                                    <button class="filter-button" data-filter-category="sweet" type="button">
                                         🍰 Sweet
                                     </button>
 
-                                    <button class="filter-button">
+                                    <button class="filter-button" data-filter-category="high-protein" type="button">
                                         💪 High Protein
                                     </button>
 
@@ -435,19 +642,19 @@
 
                                     <select id="calorie-filter">
 
-                                        <option>
+                                        <option value="all">
                                             Any amount
                                         </option>
 
-                                        <option>
+                                        <option value="300">
                                             Under 300 kcal
                                         </option>
 
-                                        <option>
+                                        <option value="400">
                                             Under 400 kcal
                                         </option>
 
-                                        <option>
+                                        <option value="500">
                                             Under 500 kcal
                                         </option>
 
