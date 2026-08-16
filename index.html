@@ -23,6 +23,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
     <script>
         const firebaseConfig = {
@@ -41,6 +42,7 @@
         window.firebaseAnalytics = firebase.analytics();
         window.firebaseDb = firebase.firestore();
         window.firebaseStorage = firebase.storage();
+        window.firebaseAuth = firebase.auth();
     </script>
 
     <script src="javascript.js"></script>
@@ -54,6 +56,37 @@
          This keeps the site in a single page while still providing
          a proper form for creating a recipe.
     ========================================================== -->
+    <div id="auth-modal" class="auth-modal" aria-hidden="false">
+        <div class="auth-window">
+            <div class="add-recipe-titlebar">
+                <span>🔐 Recipe Box Login</span>
+            </div>
+
+            <form id="auth-form" class="auth-form" novalidate>
+                <div class="auth-form-body">
+                    <div class="auth-logo">🍴</div>
+                    <h2>Sign in to continue</h2>
+
+                    <div class="field-group full-width">
+                        <label for="auth-email">Email</label>
+                        <input type="email" id="auth-email" name="auth-email" placeholder="you@example.com" required>
+                    </div>
+
+                    <div class="field-group full-width">
+                        <label for="auth-password">Password</label>
+                        <input type="password" id="auth-password" name="auth-password" placeholder="Your password" required>
+                    </div>
+
+                    <div id="auth-error" class="form-error" aria-live="polite"></div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="retro-button">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="add-recipe-modal" class="add-recipe-modal hidden" aria-hidden="true">
         <div class="add-recipe-window">
 

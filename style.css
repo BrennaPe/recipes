@@ -801,6 +801,7 @@ select {
    Matches the retro Windows aesthetic while providing a clean
    form for recipe creation.
    ============================================================ */
+.auth-modal,
 .add-recipe-modal {
     position: fixed;
     inset: 0;
@@ -810,11 +811,61 @@ select {
     justify-content: center;
 
     background: rgba(0, 0, 0, 0.45);
-    z-index: 25;
+    z-index: 40;
 }
 
+.auth-modal.hidden,
 .add-recipe-modal.hidden {
     display: none;
+}
+
+.auth-window {
+    width: min(420px, 92vw);
+    background: #d4d0c8;
+    border-top: 2px solid white;
+    border-left: 2px solid white;
+    border-right: 2px solid #404040;
+    border-bottom: 2px solid #404040;
+    box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.25);
+}
+
+.auth-form {
+    padding-bottom: 12px;
+}
+
+.auth-form-body {
+    padding: 18px 18px 0;
+    text-align: center;
+}
+
+.auth-logo {
+    margin: 0 auto 12px;
+    width: 72px;
+    height: 72px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    font-size: 34px;
+}
+
+.auth-form h2 {
+    margin-bottom: 16px;
+    color: #003399;
+    font-size: 18px;
+}
+
+.auth-form .field-group {
+    margin-bottom: 12px;
+    text-align: left;
+}
+
+.auth-form .form-actions {
+    padding-top: 0;
 }
 
 .add-recipe-window {

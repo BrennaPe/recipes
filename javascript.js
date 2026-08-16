@@ -14,6 +14,71 @@ document.addEventListener("DOMContentLoaded", function () {
     // ============================================
     const RECIPE_DELETE_PASSWORD = "recipe123";
 
+    const firebaseAuth = window.firebaseAuth || (window.firebase && firebase.auth && firebase.auth());
+
+    function setAuthError(message) {
+        const authError = document.getElementById("auth-error");
+        if (!authError) return;
+        authError.textContent = message || "";
+    }
+
+    function showAuthModal(visible) {
+        const authModal = document.getElementById("auth-modal");
+        if (!authModal) return;
+        authModal.classList.toggle("hidden", !visible);
+        authModal.setAttribute("aria-hidden", String(!visible));
+    }
+
+    if (firebaseAuth) {
+        firebaseAuth.onAuthStateChanged(function (user) {
+            const authModal = document.getElementById("auth-modal");
+            if (user) {
+                if (authModal) {
+                    authModal.classList.add("hidden");
+                    authModal.setAttribute("aria-hidden", "true");
+                }
+                setAuthError("");
+            } else if (authModal) {
+                authModal.classList.remove("hidden");
+                authModal.setAttribute("aria-hidden", "false");
+            }
+        });
+    }
+
+    const authForm = document.getElementById("auth-form");
+    if (authForm) {
+        authForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            setAuthError("");
+
+            const emailInput = document.getElementById("auth-email");
+            const passwordInput = document.getElementById("auth-password");
+
+            if (!emailInput || !passwordInput) {
+                return;
+            }
+
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                setAuthError("Email and password are required.");
+                return;
+            }
+
+            try {
+                if (!firebaseAuth) {
+                    throw new Error("Firebase Auth is not initialized.");
+                }
+
+                await firebaseAuth.signInWithEmailAndPassword(email, password);
+            } catch (error) {
+                console.error("Authentication failed:", error);
+                setAuthError(error.message || "Unable to sign in with the provided credentials.");
+            }
+        });
+    }
+
     // ============================================
     // FIREBASE CONNECTION
     // Exposes the Firebase app and database to the page so the
