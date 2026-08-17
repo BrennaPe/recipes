@@ -476,6 +476,29 @@ document.addEventListener("DOMContentLoaded", function () {
     const cancelRecipeButton = document.getElementById("cancel-recipe-button");
     const addRecipeForm = document.getElementById("add-recipe-form");
     const addRecipeError = document.getElementById("add-recipe-error");
+    const addRecipeStatus = document.getElementById("add-recipe-status");
+    const saveRecipeButton = document.getElementById("save-recipe-button");
+
+    function setRecipeSaveState(isSaving, message, type) {
+        if (saveRecipeButton) {
+            saveRecipeButton.disabled = isSaving;
+            saveRecipeButton.textContent = isSaving ? "Saving..." : "Save Recipe";
+        }
+
+        if (addRecipeStatus) {
+            addRecipeStatus.textContent = message || "";
+            addRecipeStatus.classList.toggle("loading", Boolean(isSaving && message));
+            addRecipeStatus.classList.toggle("success", type === "success");
+            addRecipeStatus.classList.toggle("error", type === "error");
+        }
+
+        if (!message) {
+            if (addRecipeStatus) {
+                addRecipeStatus.textContent = "";
+                addRecipeStatus.classList.remove("loading", "success", "error");
+            }
+        }
+    }
 
     function openRecipeModal() {
         if (!addRecipeModal) return;
@@ -1313,6 +1336,10 @@ document.addEventListener("DOMContentLoaded", function () {
             event.preventDefault();
             clearAddRecipeError();
 
+            if (addRecipeForm.dataset.isSubmitting === "true") {
+                return;
+            }
+
             const formData = new FormData(addRecipeForm);
             const validationMessage = validateRecipeForm(formData);
 
@@ -1320,6 +1347,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 setAddRecipeError(validationMessage);
                 return;
             }
+
+            addRecipeForm.dataset.isSubmitting = "true";
+            setRecipeSaveState(true, "Saving recipe...", "loading");
 
             const recipeName = document.getElementById("recipe-name").value.trim();
             const recipeDescription = document.getElementById("recipe-description").value.trim();
@@ -1337,33 +1367,33 @@ document.addEventListener("DOMContentLoaded", function () {
             const selectedImage = getSelectedRecipeImage();
             let finalImageUrl = selectedImage;
 
-            if (imageUploadInput && imageUploadInput.files && imageUploadInput.files[0]) {
-                try {
-                    finalImageUrl = await uploadRecipeImageToStorage(imageUploadInput.files[0]);
-                } catch (error) {
-                    console.error("Image upload failed:", error);
-                }
-            }
-
-            const newRecipe = {
-                id: Date.now(),
-                name: recipeName,
-                description: recipeDescription,
-                category: category,
-                prepTime: prepTime,
-                servings: servings,
-                difficulty: difficulty,
-                calories: calories,
-                protein: protein,
-                carbs: carbs,
-                fat: fat,
-                fiber: fiber,
-                image: finalImageUrl,
-                ingredients: ingredients,
-                instructions: instructions
-            };
-
             try {
+                if (imageUploadInput && imageUploadInput.files && imageUploadInput.files[0]) {
+                    try {
+                        finalImageUrl = await uploadRecipeImageToStorage(imageUploadInput.files[0]);
+                    } catch (error) {
+                        console.error("Image upload failed:", error);
+                    }
+                }
+
+                const newRecipe = {
+                    id: Date.now(),
+                    name: recipeName,
+                    description: recipeDescription,
+                    category: category,
+                    prepTime: prepTime,
+                    servings: servings,
+                    difficulty: difficulty,
+                    calories: calories,
+                    protein: protein,
+                    carbs: carbs,
+                    fat: fat,
+                    fiber: fiber,
+                    image: finalImageUrl,
+                    ingredients: ingredients,
+                    instructions: instructions
+                };
+
                 const editingRecipeId = addRecipeForm.dataset.editingRecipeId || "";
                 let savedRecipe;
 
@@ -1380,24 +1410,30 @@ document.addEventListener("DOMContentLoaded", function () {
                     savedRecipe = await saveRecipeToFirestore(newRecipe);
                 }
 
+                setRecipeSaveState(false, "Recipe saved!", "success");
                 renderRecipeCard(savedRecipe);
+
+                window.setTimeout(function () {
+                    addRecipeForm.reset();
+                    addRecipeForm.dataset.editingRecipeId = "";
+                    addRecipeForm.dataset.isSubmitting = "false";
+                    uploadedImageDataUrl = "";
+                    clearPreviewImage();
+                    ingredientList.innerHTML = "";
+                    instructionList.innerHTML = "";
+                    addIngredientRow("");
+                    addIngredientRow("");
+                    addInstructionRow("");
+                    addInstructionRow("");
+                    setRecipeSaveState(false, "", "");
+                    closeRecipeModal();
+                }, 700);
             } catch (error) {
                 console.error("Failed to save recipe to Firestore:", error);
+                addRecipeForm.dataset.isSubmitting = "false";
+                setRecipeSaveState(false, error.message || "The recipe could not be saved to the database. Please try again.", "error");
                 setAddRecipeError(error.message || "The recipe could not be saved to the database. Please try again.");
-                return;
             }
-
-            addRecipeForm.reset();
-            addRecipeForm.dataset.editingRecipeId = "";
-            uploadedImageDataUrl = "";
-            clearPreviewImage();
-            ingredientList.innerHTML = "";
-            instructionList.innerHTML = "";
-            addIngredientRow("");
-            addIngredientRow("");
-            addInstructionRow("");
-            addInstructionRow("");
-            closeRecipeModal();
         });
     }
 

@@ -1153,6 +1153,55 @@ body.auth-required .desktop {
     background: #e7e7e7;
 }
 
+.form-status,
+.form-error {
+    min-height: 18px;
+    margin-top: 12px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.form-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    color: #0d5a2d;
+}
+
+.form-status.loading {
+    color: #1d4d7d;
+}
+
+.form-status.success {
+    color: #0d5a2d;
+}
+
+.form-status.error {
+    color: #b00020;
+}
+
+.form-status::before {
+    content: "";
+    display: none;
+    width: 10px;
+    height: 10px;
+    border: 2px solid #1d4d7d;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+.form-status.loading::before {
+    display: inline-block;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .form-actions {
     display: flex;
     justify-content: flex-end;
@@ -1161,12 +1210,7 @@ body.auth-required .desktop {
 }
 
 .form-error {
-    min-height: 18px;
-    margin-top: 12px;
-
     color: #b00020;
-    font-size: 11px;
-    font-weight: bold;
 }
 
 .recipe-ingredient-progress {
