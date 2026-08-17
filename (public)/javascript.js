@@ -130,7 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function saveRecipeToFirestore(recipe) {
         if (!firestoreDb) {
-            return recipe;
+            throw new Error("Firestore is not available. Please check your Firebase configuration.");
         }
 
         const docRef = await firestoreDb.collection("recipes").add(normalizeRecipeForFirestore(recipe));
@@ -171,8 +171,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     async function deleteRecipeFromFirestore(recipeId) {
-        if (!firestoreDb || !recipeId) {
-            return false;
+        if (!firestoreDb) {
+            throw new Error("Firestore is not available. Please check your Firebase configuration.");
+        }
+
+        if (!recipeId) {
+            throw new Error("The recipe could not be deleted because it does not have a valid database ID.");
         }
 
         await firestoreDb.collection("recipes").doc(String(recipeId)).delete();
@@ -669,11 +673,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const parentSection = card.closest(".recipe-section");
 
             try {
-                if (recipeId) {
-                    await deleteRecipeFromFirestore(recipeId);
+                if (!recipeId) {
+                    throw new Error("This recipe does not have a database ID, so it cannot be deleted from Firestore.");
                 }
+
+                await deleteRecipeFromFirestore(recipeId);
             } catch (error) {
                 console.error("Failed to delete recipe from Firestore:", error);
+                window.alert(error.message || "The recipe could not be deleted from the database. Please try again.");
+                return;
             }
 
             card.remove();
@@ -973,8 +981,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 const savedRecipe = await saveRecipeToFirestore(newRecipe);
                 renderRecipeCard(savedRecipe);
             } catch (error) {
-                renderRecipeCard(newRecipe);
                 console.error("Failed to save recipe to Firestore:", error);
+                setAddRecipeError(error.message || "The recipe could not be saved to the database. Please try again.");
+                return;
             }
 
             addRecipeForm.reset();
