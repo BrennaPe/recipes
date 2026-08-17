@@ -59,31 +59,74 @@
     <div id="auth-modal" class="auth-modal" aria-hidden="false">
         <div class="auth-window">
             <div class="add-recipe-titlebar">
-                <span>🔐 Recipe Box Login</span>
+                <span>🔐 Recipe Box Access</span>
             </div>
 
-            <form id="auth-form" class="auth-form" novalidate>
-                <div class="auth-form-body">
-                    <div class="auth-logo">🍴</div>
-                    <h2>Sign in to continue</h2>
+            <div class="auth-tabs" role="tablist" aria-label="Authentication mode">
+                <button type="button" class="auth-mode-button active" data-auth-mode="signin" role="tab" aria-selected="true">
+                    Sign In
+                </button>
+                <button type="button" class="auth-mode-button" data-auth-mode="signup" role="tab" aria-selected="false">
+                    Sign Up
+                </button>
+            </div>
 
-                    <div class="field-group full-width">
-                        <label for="auth-email">Email</label>
-                        <input type="email" id="auth-email" name="auth-email" placeholder="you@example.com" required>
+            <div id="auth-signin-panel" class="auth-panel">
+                <form id="auth-form" class="auth-form" novalidate>
+                    <div class="auth-form-body">
+<div class="auth-logo">
+                        <img src="https://cdn3.emoji.gg/emojis/10386-beanlaugh.gif" width="64px" height="64px" alt="BEANLAUGH">
+                    </div>
+                        <h2>Welcome back</h2>
+
+                        <div class="field-group full-width">
+                            <label for="auth-email">Email</label>
+                            <input type="email" id="auth-email" name="auth-email" placeholder="you@example.com" required>
+                        </div>
+
+                        <div class="field-group full-width">
+                            <label for="auth-password">Password</label>
+                            <input type="password" id="auth-password" name="auth-password" placeholder="Your password" required>
+                        </div>
+
+                        <div id="auth-confirm-password-wrap" class="field-group full-width hidden">
+                            <label for="auth-confirm-password">Confirm Password</label>
+                            <input type="password" id="auth-confirm-password" name="auth-confirm-password" placeholder="Re-enter your password">
+                        </div>
+
+                        <div id="auth-error" class="form-error" aria-live="polite"></div>
                     </div>
 
-                    <div class="field-group full-width">
-                        <label for="auth-password">Password</label>
-                        <input type="password" id="auth-password" name="auth-password" placeholder="Your password" required>
+                    <div class="form-actions auth-actions">
+                        <button type="submit" id="auth-submit-button" class="retro-button">Sign In</button>
+                    </div>
+                </form>
+            </div>
+
+            <div id="auth-forgot-panel" class="auth-panel hidden">
+                <form id="forgot-password-form" class="auth-form" novalidate>
+                    <div class="auth-form-body">
+                        <div class="auth-logo">✉️</div>
+                        <h2>Reset password</h2>
+
+                        <div class="field-group full-width">
+                            <label for="forgot-email">Email</label>
+                            <input type="email" id="forgot-email" name="forgot-email" placeholder="you@example.com" required>
+                        </div>
+
+                        <div id="forgot-error" class="form-error" aria-live="polite"></div>
                     </div>
 
-                    <div id="auth-error" class="form-error" aria-live="polite"></div>
-                </div>
+                    <div class="form-actions auth-actions">
+                        <button type="submit" class="retro-button">Send reset email</button>
+                    </div>
+                </form>
+            </div>
 
-                <div class="form-actions">
-                    <button type="submit" class="retro-button">Login</button>
-                </div>
-            </form>
+            <div class="auth-links">
+                <button type="button" class="auth-link-button" id="show-forgot-password">Forgot Password?</button>
+                <button type="button" class="auth-link-button" id="back-to-auth">Back to sign in</button>
+            </div>
         </div>
     </div>
 
@@ -494,6 +537,12 @@
                                     <li>
                                         <button id="add-recipe-button" type="button" class="quick-link-button">
                                             ➕ Add Recipe
+                                        </button>
+                                    </li>
+
+                                    <li>
+                                        <button id="sign-out-button" type="button" class="quick-link-button">
+                                            🚪 Sign Out
                                         </button>
                                     </li>
 

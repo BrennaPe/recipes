@@ -829,6 +829,45 @@ select {
     box-shadow: 6px 6px 0 rgba(0, 0, 0, 0.25);
 }
 
+.auth-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    background: #c3c0b8;
+    border-bottom: 2px solid #808080;
+}
+
+.auth-mode-button {
+    padding: 12px 10px;
+    background: #d4d0c8;
+    border: none;
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    border-right: 2px solid #808080;
+    border-bottom: 2px solid #808080;
+    color: #1a1a1a;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.auth-mode-button.active {
+    background: #fff;
+    border-top: 2px solid #fff;
+    border-left: 2px solid #fff;
+    border-right: 2px solid #404040;
+    border-bottom: 2px solid #fff;
+    color: #003399;
+}
+
+.auth-panel {
+    display: block;
+}
+
+.auth-panel.hidden,
+.hidden {
+    display: none !important;
+}
+
 .auth-form {
     padding-bottom: 12px;
 }
@@ -866,6 +905,31 @@ select {
 
 .auth-form .form-actions {
     padding-top: 0;
+}
+
+.auth-actions {
+    padding: 0 18px 18px;
+}
+
+.auth-links {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 0 18px 18px;
+}
+
+.auth-link-button {
+    background: transparent;
+    border: none;
+    color: #003399;
+    font-weight: bold;
+    text-decoration: underline;
+    cursor: pointer;
+    padding: 0;
+}
+
+body.auth-required .desktop {
+    display: none;
 }
 
 .add-recipe-window {

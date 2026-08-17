@@ -16,10 +16,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const firebaseAuth = window.firebaseAuth || (window.firebase && firebase.auth && firebase.auth());
 
-    function setAuthError(message) {
-        const authError = document.getElementById("auth-error");
-        if (!authError) return;
-        authError.textContent = message || "";
+    function setAuthError(message, targetId) {
+        const target = document.getElementById(targetId || "auth-error");
+        if (!target) return;
+        target.textContent = message || "";
     }
 
     function showAuthModal(visible) {
@@ -29,30 +29,208 @@ document.addEventListener("DOMContentLoaded", function () {
         authModal.setAttribute("aria-hidden", String(!visible));
     }
 
+    function normalizeAuthError(error, fallbackMessage) {
+        if (!error) {
+            return fallbackMessage || "Unable to complete your request.";
+        }
+
+        const code = error.code || "";
+
+        switch (code) {
+            case "auth/invalid-email":
+                return "Please enter a valid email address.";
+            case "auth/user-disabled":
+                return "This account has been disabled.";
+            case "auth/user-not-found":
+                return "No account was found for that email.";
+            case "auth/wrong-password":
+                return "The password you entered is incorrect.";
+            case "auth/email-already-in-use":
+                return "This email is already registered. Try signing in instead.";
+            case "auth/weak-password":
+                return "Choose a stronger password with at least 6 characters.";
+            case "auth/too-many-requests":
+                return "Too many attempts. Please try again in a few minutes.";
+            case "auth/missing-password":
+                return "Please enter a password.";
+            case "auth/requires-recent-login":
+                return "Please sign in again to continue.";
+            default:
+                return error.message || fallbackMessage || "Unable to complete your request.";
+        }
+    }
+
+    function setAuthMode(mode) {
+        const activeButtons = document.querySelectorAll(".auth-mode-button");
+        const confirmPasswordWrap = document.getElementById("auth-confirm-password-wrap");
+        const submitButton = document.getElementById("auth-submit-button");
+        const authTitle = document.querySelector("#auth-form h2");
+        const authPanel = document.getElementById("auth-signin-panel");
+        const forgotPanel = document.getElementById("auth-forgot-panel");
+        const showForgot = document.getElementById("show-forgot-password");
+        const backToAuth = document.getElementById("back-to-auth");
+
+        const isSignup = mode === "signup";
+
+        activeButtons.forEach(function (button) {
+            const enabled = button.dataset.authMode === mode;
+            button.classList.toggle("active", enabled);
+            button.setAttribute("aria-selected", String(enabled));
+        });
+
+        if (confirmPasswordWrap) {
+            confirmPasswordWrap.classList.toggle("hidden", !isSignup);
+        }
+
+        if (submitButton) {
+            submitButton.textContent = isSignup ? "Sign Up" : "Sign In";
+        }
+
+        if (authTitle) {
+            authTitle.textContent = isSignup ? "Create an account" : "Welcome back";
+        }
+
+        if (authPanel) {
+            authPanel.classList.toggle("hidden", false);
+        }
+
+        if (forgotPanel) {
+            forgotPanel.classList.toggle("hidden", true);
+        }
+
+        if (showForgot) {
+            showForgot.style.display = isSignup ? "none" : "inline";
+        }
+
+        if (backToAuth) {
+            backToAuth.style.display = "none";
+        }
+
+        setAuthError("", "auth-error");
+        setAuthError("", "forgot-error");
+    }
+
+    function showForgotPasswordFlow() {
+        const authPanel = document.getElementById("auth-signin-panel");
+        const forgotPanel = document.getElementById("auth-forgot-panel");
+        const showForgot = document.getElementById("show-forgot-password");
+        const backToAuth = document.getElementById("back-to-auth");
+
+        if (authPanel) {
+            authPanel.classList.add("hidden");
+        }
+
+        if (forgotPanel) {
+            forgotPanel.classList.remove("hidden");
+        }
+
+        if (showForgot) {
+            showForgot.style.display = "none";
+        }
+
+        if (backToAuth) {
+            backToAuth.style.display = "inline";
+        }
+
+        setAuthError("", "auth-error");
+        setAuthError("", "forgot-error");
+    }
+
+    function showAuthScreen() {
+        const authPanel = document.getElementById("auth-signin-panel");
+        const forgotPanel = document.getElementById("auth-forgot-panel");
+        const showForgot = document.getElementById("show-forgot-password");
+        const backToAuth = document.getElementById("back-to-auth");
+
+        if (authPanel) {
+            authPanel.classList.remove("hidden");
+        }
+
+        if (forgotPanel) {
+            forgotPanel.classList.add("hidden");
+        }
+
+        if (showForgot) {
+            showForgot.style.display = "inline";
+        }
+
+        if (backToAuth) {
+            backToAuth.style.display = "none";
+        }
+
+        setAuthError("", "auth-error");
+        setAuthError("", "forgot-error");
+    }
+
+    const signOutButton = document.getElementById("sign-out-button");
+    if (signOutButton) {
+        signOutButton.addEventListener("click", async function () {
+            try {
+                if (!firebaseAuth) {
+                    throw new Error("Firebase Auth is not initialized.");
+                }
+
+                await firebaseAuth.signOut();
+            } catch (error) {
+                console.error("Sign out failed:", error);
+                setAuthError(normalizeAuthError(error, "Unable to sign out right now."));
+            }
+        });
+    }
+
     if (firebaseAuth) {
         firebaseAuth.onAuthStateChanged(function (user) {
             const authModal = document.getElementById("auth-modal");
+            const desktopApp = document.querySelector(".desktop");
+            const authRequired = !user;
+
+            document.body.classList.toggle("auth-required", authRequired);
+
             if (user) {
                 if (authModal) {
                     authModal.classList.add("hidden");
                     authModal.setAttribute("aria-hidden", "true");
                 }
-                setAuthError("");
-            } else if (authModal) {
-                authModal.classList.remove("hidden");
-                authModal.setAttribute("aria-hidden", "false");
+
+                if (desktopApp) {
+                    desktopApp.style.display = "block";
+                }
+
+                setAuthError("", "auth-error");
+                setAuthError("", "forgot-error");
+            } else {
+                if (authModal) {
+                    authModal.classList.remove("hidden");
+                    authModal.setAttribute("aria-hidden", "false");
+                }
+
+                if (desktopApp) {
+                    desktopApp.style.display = "none";
+                }
+
+                setAuthMode("signin");
+                showAuthScreen();
             }
         });
     }
+
+    const authModeButtons = document.querySelectorAll(".auth-mode-button");
+    authModeButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            const nextMode = button.dataset.authMode || "signin";
+            setAuthMode(nextMode);
+        });
+    });
 
     const authForm = document.getElementById("auth-form");
     if (authForm) {
         authForm.addEventListener("submit", async function (event) {
             event.preventDefault();
-            setAuthError("");
+            setAuthError("", "auth-error");
 
             const emailInput = document.getElementById("auth-email");
             const passwordInput = document.getElementById("auth-password");
+            const confirmPasswordInput = document.getElementById("auth-confirm-password");
 
             if (!emailInput || !passwordInput) {
                 return;
@@ -60,9 +238,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const email = emailInput.value.trim();
             const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput ? confirmPasswordInput.value : "";
+            const isSignup = document.querySelector(".auth-mode-button.active")?.dataset.authMode === "signup";
 
             if (!email || !password) {
-                setAuthError("Email and password are required.");
+                setAuthError("Email and password are required.", "auth-error");
+                return;
+            }
+
+            if (isSignup && password !== confirmPassword) {
+                setAuthError("Passwords do not match.", "auth-error");
                 return;
             }
 
@@ -71,11 +256,63 @@ document.addEventListener("DOMContentLoaded", function () {
                     throw new Error("Firebase Auth is not initialized.");
                 }
 
-                await firebaseAuth.signInWithEmailAndPassword(email, password);
+                if (isSignup) {
+                    await firebaseAuth.createUserWithEmailAndPassword(email, password);
+                } else {
+                    await firebaseAuth.signInWithEmailAndPassword(email, password);
+                }
             } catch (error) {
                 console.error("Authentication failed:", error);
-                setAuthError(error.message || "Unable to sign in with the provided credentials.");
+                setAuthError(normalizeAuthError(error, isSignup ? "Unable to create your account." : "Unable to sign in with the provided credentials."), "auth-error");
             }
+        });
+    }
+
+    const forgotPasswordForm = document.getElementById("forgot-password-form");
+    if (forgotPasswordForm) {
+        forgotPasswordForm.addEventListener("submit", async function (event) {
+            event.preventDefault();
+            setAuthError("", "forgot-error");
+
+            const emailInput = document.getElementById("forgot-email");
+            const email = emailInput ? emailInput.value.trim() : "";
+
+            if (!email) {
+                setAuthError("Please enter your email address.", "forgot-error");
+                return;
+            }
+
+            try {
+                if (!firebaseAuth) {
+                    throw new Error("Firebase Auth is not initialized.");
+                }
+
+                await firebaseAuth.sendPasswordResetEmail(email);
+                setAuthError("Password reset email sent. Check your inbox.", "forgot-error");
+                setTimeout(function () {
+                    showAuthScreen();
+                    const emailField = document.getElementById("auth-email");
+                    if (emailField) {
+                        emailField.value = email;
+                    }
+                }, 1200);
+            } catch (error) {
+                console.error("Password reset failed:", error);
+                setAuthError(normalizeAuthError(error, "Unable to send the password reset email."), "forgot-error");
+            }
+        });
+    }
+
+    const showForgotPasswordButton = document.getElementById("show-forgot-password");
+    if (showForgotPasswordButton) {
+        showForgotPasswordButton.addEventListener("click", showForgotPasswordFlow);
+    }
+
+    const backToAuthButton = document.getElementById("back-to-auth");
+    if (backToAuthButton) {
+        backToAuthButton.addEventListener("click", function () {
+            showAuthScreen();
+            setAuthMode("signin");
         });
     }
 
