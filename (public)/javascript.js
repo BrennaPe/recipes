@@ -183,6 +183,25 @@ document.addEventListener("DOMContentLoaded", function () {
         return true;
     }
 
+    async function updateRecipeInFirestore(recipeId, recipe) {
+        if (!firestoreDb) {
+            throw new Error("Firestore is not available. Please check your Firebase configuration.");
+        }
+
+        if (!recipeId) {
+            throw new Error("The recipe could not be updated because it does not have a valid database ID.");
+        }
+
+        const updatedDoc = normalizeRecipeForFirestore(recipe);
+        await firestoreDb.collection("recipes").doc(String(recipeId)).update(updatedDoc);
+
+        return {
+            ...recipe,
+            firestoreId: String(recipeId),
+            id: String(recipeId)
+        };
+    }
+
     // ============================================
     // STARTUP POPUP
     // Handles the retro welcome popup and its
@@ -639,20 +658,149 @@ document.addEventListener("DOMContentLoaded", function () {
     // Adds a delete button to every recipe card and protects
     // deletion behind a simple password prompt.
     // ============================================
+    function populateRecipeFormForEdit(card) {
+        const recipeId = card.dataset.firestoreId || card.dataset.recipeId || "";
+        if (!recipeId) {
+            window.alert("This recipe does not have a database ID, so it cannot be edited.");
+            return;
+        }
+
+        const name = card.querySelector("h3") ? card.querySelector("h3").textContent.trim() : "";
+        const description = card.querySelector(".recipe-description") ? card.querySelector(".recipe-description").textContent.trim() : "";
+        const category = card.closest(".recipe-section") ? card.closest(".recipe-section").id : "savory";
+
+        const metaSpans = Array.from(card.querySelectorAll(".recipe-meta span"));
+        const prepTime = metaSpans[0] ? metaSpans[0].textContent.replace(/⏱|\s+/g, "").trim() : "";
+        const servings = metaSpans[1] ? metaSpans[1].textContent.replace(/👥|\s+/g, "").trim() : "";
+        const difficulty = metaSpans[2] ? metaSpans[2].textContent.replace(/⭐|\s+/g, "").trim() : "";
+
+        const calories = card.querySelector(".nutrition-calories strong") ? Number(card.querySelector(".nutrition-calories strong").textContent.trim()) || 0 : 0;
+        const nutritionRows = Array.from(card.querySelectorAll(".nutrition-row"));
+
+        const getNutritionValue = function (labelText) {
+            const row = nutritionRows.find(function (rowNode) {
+                const label = rowNode.querySelector("span");
+                return label && label.textContent.trim().toLowerCase() === labelText;
+            });
+
+            if (!row) return 0;
+            const value = row.querySelector("strong");
+            return value ? Number(value.textContent.replace(/[^0-9.]/g, "")) || 0 : 0;
+        };
+
+        const protein = getNutritionValue("protein");
+        const carbs = getNutritionValue("carbohydrates");
+        const fat = getNutritionValue("fat");
+        const fiber = getNutritionValue("fiber");
+
+        const ingredientListItems = Array.from(card.querySelectorAll(".recipe-details ul li"));
+        const instructionListItems = Array.from(card.querySelectorAll(".recipe-details ol li"));
+
+        const ingredientValues = ingredientListItems.map(function (item) {
+            return item.textContent.trim();
+        }).filter(Boolean);
+
+        const instructionValues = instructionListItems.map(function (item) {
+            return item.textContent.trim();
+        }).filter(Boolean);
+
+        const form = document.getElementById("add-recipe-form");
+        if (!form) return;
+
+        form.dataset.editingRecipeId = recipeId;
+        document.getElementById("recipe-name").value = name;
+        document.getElementById("recipe-description").value = description;
+        document.getElementById("recipe-category").value = category;
+        document.getElementById("recipe-prep-time").value = prepTime;
+        document.getElementById("recipe-servings").value = servings.replace(/[^0-9]/g, "") || "";
+        document.getElementById("recipe-difficulty").value = difficulty;
+        document.getElementById("recipe-calories").value = calories;
+        document.getElementById("recipe-protein").value = protein;
+        document.getElementById("recipe-carbs").value = carbs;
+        document.getElementById("recipe-fat").value = fat;
+        document.getElementById("recipe-fiber").value = fiber;
+
+        const ingredientContainer = document.getElementById("ingredient-list");
+        const instructionContainer = document.getElementById("instruction-list");
+
+        if (ingredientContainer) {
+            ingredientContainer.innerHTML = "";
+            ingredientValues.forEach(function (ingredient) {
+                addIngredientRow(ingredient);
+            });
+            if (!ingredientValues.length) {
+                addIngredientRow("");
+            }
+        }
+
+        if (instructionContainer) {
+            instructionContainer.innerHTML = "";
+            instructionValues.forEach(function (step) {
+                addInstructionRow(step);
+            });
+            if (!instructionValues.length) {
+                addInstructionRow("");
+            }
+        }
+
+        const image = card.querySelector(".recipe-image img");
+        const imageUrlInput = document.getElementById("recipe-image-url");
+        const imagePreview = document.getElementById("recipe-image-preview");
+
+        if (imageUrlInput) {
+            imageUrlInput.value = image && image.src ? image.src : "";
+        }
+
+        uploadedImageDataUrl = "";
+        if (imagePreview) {
+            if (image && image.src) {
+                imagePreview.src = image.src;
+                imagePreview.classList.remove("hidden");
+            } else {
+                imagePreview.src = "";
+                imagePreview.classList.add("hidden");
+            }
+        }
+
+        clearAddRecipeError();
+        openRecipeModal();
+    }
+
     function attachDeleteButton(card) {
         const cardBody = card.querySelector(".recipe-card-body");
         if (!cardBody) return;
 
         const existingDeleteButton = card.querySelector(".recipe-delete-button");
-        if (existingDeleteButton) return;
+        const existingEditButton = card.querySelector(".recipe-edit-button");
+        if (existingDeleteButton && existingEditButton) return;
 
-        const deleteWrapper = document.createElement("div");
-        deleteWrapper.className = "recipe-delete-wrapper";
+        const actionWrapper = document.createElement("div");
+        actionWrapper.className = "recipe-actions-wrapper";
 
         const deleteButton = document.createElement("button");
         deleteButton.type = "button";
         deleteButton.className = "recipe-delete-button";
         deleteButton.textContent = "🗑 Delete Recipe";
+
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.className = "recipe-edit-button";
+        editButton.textContent = "✏️ Edit Recipe";
+
+        editButton.addEventListener("click", function () {
+            const enteredPassword = window.prompt("Enter the password to edit this recipe:");
+
+            if (enteredPassword === null) {
+                return;
+            }
+
+            if (enteredPassword !== RECIPE_DELETE_PASSWORD) {
+                window.alert("Incorrect password. Recipe was not edited.");
+                return;
+            }
+
+            populateRecipeFormForEdit(card);
+        });
 
         deleteButton.addEventListener("click", async function () {
             const enteredPassword = window.prompt("Enter the password to delete this recipe:");
@@ -692,13 +840,14 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         });
 
-        deleteWrapper.appendChild(deleteButton);
+        actionWrapper.appendChild(editButton);
+        actionWrapper.appendChild(deleteButton);
 
         const meta = cardBody.querySelector(".recipe-meta");
         if (meta) {
-            meta.insertAdjacentElement("afterend", deleteWrapper);
+            meta.insertAdjacentElement("afterend", actionWrapper);
         } else {
-            cardBody.appendChild(deleteWrapper);
+            cardBody.appendChild(actionWrapper);
         }
     }
 
@@ -978,7 +1127,22 @@ document.addEventListener("DOMContentLoaded", function () {
             };
 
             try {
-                const savedRecipe = await saveRecipeToFirestore(newRecipe);
+                const editingRecipeId = addRecipeForm.dataset.editingRecipeId || "";
+                let savedRecipe;
+
+                if (editingRecipeId) {
+                    const updatedRecipe = await updateRecipeInFirestore(editingRecipeId, newRecipe);
+                    const existingCard = document.querySelector(`.recipe-card[data-firestore-id="${editingRecipeId}"]`);
+
+                    if (existingCard) {
+                        existingCard.remove();
+                    }
+
+                    savedRecipe = updatedRecipe;
+                } else {
+                    savedRecipe = await saveRecipeToFirestore(newRecipe);
+                }
+
                 renderRecipeCard(savedRecipe);
             } catch (error) {
                 console.error("Failed to save recipe to Firestore:", error);
@@ -987,6 +1151,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             addRecipeForm.reset();
+            addRecipeForm.dataset.editingRecipeId = "";
             uploadedImageDataUrl = "";
             clearPreviewImage();
             ingredientList.innerHTML = "";

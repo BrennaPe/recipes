@@ -1867,23 +1867,22 @@ select {
     font-size: 9px;
 }
 
-.recipe-delete-wrapper {
+.recipe-actions-wrapper {
+    display: flex;
+    gap: 8px;
     margin-top: 12px;
 }
 
-.recipe-delete-button {
-    width: 100%;
+.recipe-delete-button,
+.recipe-edit-button {
+    flex: 1;
 
     padding: 7px 8px;
-
-    background: #f4d4d4;
 
     border-top: 2px solid white;
     border-left: 2px solid white;
     border-right: 2px solid #404040;
     border-bottom: 2px solid #404040;
-
-    color: #5f1010;
 
     font-size: 11px;
     font-weight: bold;
@@ -1891,11 +1890,23 @@ select {
     cursor: pointer;
 }
 
-.recipe-delete-button:hover {
-    background: #f7e1e1;
+.recipe-delete-button {
+    background: #f4d4d4;
+    color: #5f1010;
 }
 
-.recipe-delete-button:active {
+.recipe-edit-button {
+    background: #dfeafc;
+    color: #173d6d;
+}
+
+.recipe-delete-button:hover,
+.recipe-edit-button:hover {
+    filter: brightness(0.98);
+}
+
+.recipe-delete-button:active,
+.recipe-edit-button:active {
     border-top: 2px solid #404040;
     border-left: 2px solid #404040;
     border-right: 2px solid white;
@@ -2529,7 +2540,7 @@ select {
     }
 
     .quick-links {
-        display: none;
+        display: block;
     }
 
     .main-content {
