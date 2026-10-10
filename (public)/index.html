@@ -11,7 +11,7 @@
     <title>Recipe Box.exe</title>
 
     <!-- Retro system-style fonts -->
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=20260825-mobile">
 
     <!-- =========================================================
          FIREBASE SETUP
@@ -21,8 +21,6 @@
     ========================================================== -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
     <script>
@@ -30,7 +28,6 @@
             apiKey: "AIzaSyDnPbG1EsmmMWVVQA1W2h9nnfgN_JLG5c8",
             authDomain: "recipes-eaa45.firebaseapp.com",
             projectId: "recipes-eaa45",
-            storageBucket: "recipes-eaa45.firebasestorage.app",
             messagingSenderId: "597807539706",
             appId: "1:597807539706:web:8a374fb8b315f5db1e7043",
             measurementId: "G-C80L2QYBFR"
@@ -40,8 +37,6 @@
 
         window.firebaseApp = firebase.app();
         window.firebaseAnalytics = firebase.analytics();
-        window.firebaseDb = firebase.firestore();
-        window.firebaseStorage = firebase.storage();
         window.firebaseAuth = firebase.auth();
     </script>
 

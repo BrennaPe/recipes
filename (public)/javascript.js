@@ -198,6 +198,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 setAuthError("", "auth-error");
                 setAuthError("", "forgot-error");
+                initializeFirestoreRecipes();
             } else {
                 if (authModal) {
                     authModal.classList.remove("hidden");
@@ -323,26 +324,74 @@ document.addEventListener("DOMContentLoaded", function () {
     // ============================================
     window.firebaseApp = window.firebaseApp || (window.firebase && firebase.app());
     window.firebaseAnalytics = window.firebaseAnalytics || (window.firebase && firebase.analytics && firebase.analytics());
-    window.firebaseDb = window.firebaseDb || (window.firebase && firebase.firestore && firebase.firestore());
-
     // ============================================
     // FIRESTORE HELPERS
     // Keeps the recipe page connected to Firebase while still
     // allowing the local UI to update immediately after a save.
     // ============================================
-    const firestoreDb = window.firebaseDb;
-    const firebaseStorageRef = window.firebaseStorage;
+    const firestoreProjectId = window.firebaseApp ? window.firebaseApp.options.projectId : "";
+    const CLOUDINARY_CLOUD_NAME = "edjn8q0y";
+    const CLOUDINARY_UPLOAD_PRESET = "recipes";
 
-    async function uploadRecipeImageToStorage(file) {
-        if (!file || !firebaseStorageRef) {
-            return "";
+    // Convert the optimized canvas output into the binary Blob Cloudinary receives.
+    function dataUrlToBlob(dataUrl) {
+        const parts = dataUrl.split(",");
+        const mimeMatch = parts[0].match(/data:(.*?);base64/);
+        if (parts.length !== 2 || !mimeMatch) {
+            throw new Error("The optimized image could not be prepared for upload.");
         }
 
-        const timestamp = Date.now();
-        const fileName = `recipe-images/${timestamp}-${file.name.replace(/\s+/g, "-")}`;
-        const storageRef = firebaseStorageRef.ref(fileName);
-        const uploadResult = await storageRef.put(file);
-        return await uploadResult.ref.getDownloadURL();
+        const binary = window.atob(parts[1]);
+        const bytes = new Uint8Array(binary.length);
+
+        for (let index = 0; index < binary.length; index += 1) {
+            bytes[index] = binary.charCodeAt(index);
+        }
+
+        return new Blob([bytes], { type: mimeMatch ? mimeMatch[1] : "image/jpeg" });
+    }
+
+    // Upload only the already optimized Blob to Cloudinary's unsigned endpoint.
+    async function uploadRecipeImageToCloudinary(file, optimizedImage) {
+        if (!file) {
+            throw new Error("No image file was selected.");
+        }
+
+        // Keep a final guard here so Save never uploads the original full-size phone photo.
+        const optimized = optimizedImage || await optimizeImageFile(file);
+        const formData = new FormData();
+        formData.append("file", dataUrlToBlob(optimized.dataUrl), `recipe.${optimized.contentType === "image/webp" ? "webp" : "jpg"}`);
+        formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) {
+            let detail = "Cloudinary image upload failed.";
+            try {
+                const errorBody = await response.json();
+                detail = errorBody.error && errorBody.error.message ? errorBody.error.message : detail;
+            } catch (error) {
+                // Preserve a clear upload error when Cloudinary returns no JSON body.
+            }
+            throw new Error(detail);
+        }
+
+        const result = await response.json();
+        if (!result.secure_url) {
+            throw new Error("Cloudinary did not return an image URL.");
+        }
+
+        // The secure Cloudinary URL is the only image value sent to Firestore.
+        return result.secure_url;
+    }
+
+    function optimizeImageFile(file) {
+        return readFileAsDataUrl(file).then(function (originalDataUrl) {
+            return compressImageDataUrl(originalDataUrl, 1200, 1200, 0.8);
+        });
     }
 
     function normalizeRecipeForFirestore(recipe) {
@@ -361,34 +410,118 @@ document.addEventListener("DOMContentLoaded", function () {
             image: recipe.image,
             ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
             instructions: Array.isArray(recipe.instructions) ? recipe.instructions : [],
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            createdAt: new Date().toISOString()
         };
     }
 
-    async function saveRecipeToFirestore(recipe) {
-        if (!firestoreDb) {
-            throw new Error("Firestore is not available. Please check your Firebase configuration.");
+    function createRecipeIdempotencyKey() {
+        if (window.crypto && typeof window.crypto.randomUUID === "function") {
+            return window.crypto.randomUUID();
         }
 
-        const docRef = await firestoreDb.collection("recipes").add(normalizeRecipeForFirestore(recipe));
+        return `recipe-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    }
+
+    function firestoreValue(value) {
+        if (Array.isArray(value)) {
+            return { arrayValue: { values: value.map(firestoreValue) } };
+        }
+
+        if (typeof value === "number") {
+            return Number.isInteger(value) ? { integerValue: String(value) } : { doubleValue: value };
+        }
+
+        return { stringValue: String(value || "") };
+    }
+
+    function firestoreDocumentFields(recipe) {
+        const data = normalizeRecipeForFirestore(recipe);
+        const fields = {};
+
+        Object.keys(data).forEach(function (key) {
+            if (key === "createdAt") {
+                fields[key] = { timestampValue: new Date().toISOString() };
+                return;
+            }
+
+            fields[key] = firestoreValue(data[key]);
+        });
+
+        return fields;
+    }
+
+    function readFirestoreValue(value) {
+        if (!value) return "";
+        if (value.stringValue !== undefined) return value.stringValue;
+        if (value.integerValue !== undefined) return Number(value.integerValue);
+        if (value.doubleValue !== undefined) return Number(value.doubleValue);
+        if (value.booleanValue !== undefined) return value.booleanValue;
+        if (value.arrayValue) return (value.arrayValue.values || []).map(readFirestoreValue);
+        return "";
+    }
+
+    function getFirestoreRestUrl(recipeId) {
+        const baseUrl = `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(firestoreProjectId)}/databases/(default)/documents/recipes`;
+        return recipeId ? `${baseUrl}/${encodeURIComponent(recipeId)}` : baseUrl;
+    }
+
+    async function firestoreRestRequest(url, options) {
+        if (!firebaseAuth || !firebaseAuth.currentUser || !firestoreProjectId) {
+            throw new Error("You must be signed in to access recipes.");
+        }
+
+        const token = await firebaseAuth.currentUser.getIdToken();
+        const response = await fetch(url, {
+            ...options,
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+                ...(options && options.headers ? options.headers : {})
+            }
+        });
+
+        if (!response.ok) {
+            let errorMessage = "Firestore request failed.";
+            try {
+                const errorBody = await response.json();
+                errorMessage = errorBody.error && errorBody.error.message ? errorBody.error.message : errorMessage;
+            } catch (error) {
+                // Keep the stable user-facing error when the network returns no JSON body.
+            }
+            throw new Error(errorMessage);
+        }
+
+        return response.status === 204 ? null : response.json();
+    }
+
+    async function saveRecipeToFirestore(recipe, recipeId) {
+        const idempotentRecipeId = recipeId || createRecipeIdempotencyKey();
+
+        // REST avoids Firestore WebChannel Listen/Write failures reported by mobile Safari.
+        await firestoreRestRequest(getFirestoreRestUrl(idempotentRecipeId), {
+            method: "PATCH",
+            body: JSON.stringify({ name: `projects/${firestoreProjectId}/databases/(default)/documents/recipes/${idempotentRecipeId}`, fields: firestoreDocumentFields(recipe) })
+        });
         return {
             ...recipe,
-            firestoreId: docRef.id,
-            id: docRef.id
+            firestoreId: idempotentRecipeId,
+            id: idempotentRecipeId
         };
     }
 
     async function loadRecipesFromFirestore() {
-        if (!firestoreDb) {
-            return [];
-        }
+        const response = await firestoreRestRequest(getFirestoreRestUrl(), { method: "GET" });
+        return (response.documents || []).map(mapFirestoreRestRecipe);
+    }
 
-        const snapshot = await firestoreDb.collection("recipes").get();
-        return snapshot.docs.map(function (doc) {
-            const data = doc.data();
+    function mapFirestoreRestRecipe(doc) {
+            const data = {};
+            Object.keys(doc.fields || {}).forEach(function (key) {
+                data[key] = readFirestoreValue(doc.fields[key]);
+            });
             return {
-                id: doc.id,
-                firestoreId: doc.id,
+                id: doc.name.split("/").pop(),
+                firestoreId: doc.name.split("/").pop(),
                 name: data.name || "Untitled Recipe",
                 description: data.description || "",
                 category: data.category || "savory",
@@ -404,33 +537,26 @@ document.addEventListener("DOMContentLoaded", function () {
                 ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
                 instructions: Array.isArray(data.instructions) ? data.instructions : []
             };
-        });
     }
 
     async function deleteRecipeFromFirestore(recipeId) {
-        if (!firestoreDb) {
-            throw new Error("Firestore is not available. Please check your Firebase configuration.");
-        }
-
         if (!recipeId) {
             throw new Error("The recipe could not be deleted because it does not have a valid database ID.");
         }
 
-        await firestoreDb.collection("recipes").doc(String(recipeId)).delete();
+        await firestoreRestRequest(getFirestoreRestUrl(String(recipeId)), { method: "DELETE" });
         return true;
     }
 
     async function updateRecipeInFirestore(recipeId, recipe) {
-        if (!firestoreDb) {
-            throw new Error("Firestore is not available. Please check your Firebase configuration.");
-        }
-
         if (!recipeId) {
             throw new Error("The recipe could not be updated because it does not have a valid database ID.");
         }
 
-        const updatedDoc = normalizeRecipeForFirestore(recipe);
-        await firestoreDb.collection("recipes").doc(String(recipeId)).update(updatedDoc);
+        await firestoreRestRequest(getFirestoreRestUrl(String(recipeId)), {
+            method: "PATCH",
+            body: JSON.stringify({ name: `projects/${firestoreProjectId}/databases/(default)/documents/recipes/${recipeId}`, fields: firestoreDocumentFields(recipe) })
+        });
 
         return {
             ...recipe,
@@ -482,7 +608,7 @@ document.addEventListener("DOMContentLoaded", function () {
     function setRecipeSaveState(isSaving, message, type) {
         if (saveRecipeButton) {
             saveRecipeButton.disabled = isSaving;
-            saveRecipeButton.textContent = isSaving ? "Saving..." : "Save Recipe";
+            saveRecipeButton.textContent = isSaving ? "Saving recipe..." : "Save Recipe";
         }
 
         if (addRecipeStatus) {
@@ -541,6 +667,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const imageUrlInput = document.getElementById("recipe-image-url");
     const imagePreview = document.getElementById("recipe-image-preview");
     let uploadedImageDataUrl = "";
+    let optimizedImageData = null;
 
     function showPreviewImage(source) {
         if (!imagePreview) return;
@@ -580,6 +707,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 let targetWidth = image.width;
                 let targetHeight = image.height;
 
+                // Resize the longest side to 1200px before encoding to reduce mobile upload size.
                 if (targetWidth > maxWidth || targetHeight > maxHeight) {
                     const scale = Math.min(maxWidth / targetWidth, maxHeight / targetHeight);
                     targetWidth = Math.round(targetWidth * scale);
@@ -592,7 +720,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 const context = canvas.getContext("2d");
                 context.drawImage(image, 0, 0, targetWidth, targetHeight);
 
-                resolve(canvas.toDataURL("image/jpeg", quality));
+                // WebP is smaller when supported; older browsers return JPEG from the fallback.
+                const webpDataUrl = canvas.toDataURL("image/webp", quality);
+                const supportsWebp = webpDataUrl.indexOf("data:image/webp;") === 0;
+                const dataUrl = supportsWebp ? webpDataUrl : canvas.toDataURL("image/jpeg", quality);
+
+                resolve({
+                    dataUrl: dataUrl,
+                    contentType: supportsWebp ? "image/webp" : "image/jpeg"
+                });
             };
 
             image.onerror = function () {
@@ -615,14 +751,18 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             try {
+                setRecipeSaveState(true, "Optimizing image...", "loading");
                 const originalDataUrl = await readFileAsDataUrl(file);
-                const compressedDataUrl = await compressImageDataUrl(originalDataUrl, 1200, 1200, 0.8);
+                const compressedImage = await compressImageDataUrl(originalDataUrl, 1200, 1200, 0.8);
 
-                uploadedImageDataUrl = compressedDataUrl;
+                optimizedImageData = compressedImage;
+                uploadedImageDataUrl = compressedImage.dataUrl;
                 imageUrlInput.value = "";
-                showPreviewImage(compressedDataUrl);
+                showPreviewImage(compressedImage.dataUrl);
                 clearAddRecipeError();
+                setRecipeSaveState(false, "", "");
             } catch (error) {
+                setRecipeSaveState(false, "", "");
                 setAddRecipeError(error.message || "The image could not be processed.");
             }
         });
@@ -640,6 +780,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             uploadedImageDataUrl = "";
+            optimizedImageData = null;
             showPreviewImage(url);
             clearAddRecipeError();
         });
@@ -953,7 +1094,7 @@ document.addEventListener("DOMContentLoaded", function () {
         const fat = getNutritionValue("fat");
         const fiber = getNutritionValue("fiber");
 
-        const ingredientListItems = Array.from(card.querySelectorAll(".recipe-details ul li"));
+        const ingredientListItems = Array.from(card.querySelectorAll(".ingredient-item span"));
         const instructionListItems = Array.from(card.querySelectorAll(".recipe-details ol li"));
 
         const ingredientValues = ingredientListItems.map(function (item) {
@@ -1137,10 +1278,17 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function renderIngredientChecklist(card, ingredients) {
-        const existingChecklist = card.querySelector(".recipe-ingredient-progress");
-        if (existingChecklist) {
-            existingChecklist.remove();
-        }
+        const ingredientsDetails = Array.from(card.querySelectorAll(".recipe-details")).find(function (details) {
+            return /ingredients/i.test(details.querySelector("summary")?.textContent || "");
+        });
+
+        if (!ingredientsDetails) return;
+
+        const existingChecklist = ingredientsDetails.querySelector(".recipe-ingredient-progress");
+        if (existingChecklist) existingChecklist.remove();
+
+        const plainList = ingredientsDetails.querySelector("ul");
+        if (plainList) plainList.remove();
 
         if (!ingredients || ingredients.length === 0) return;
 
@@ -1177,11 +1325,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 const summary = `${checkedCount} / ${ingredientBoxes.length} ingredients — ${percentage}%`;
 
-                if (checkedCount === ingredientBoxes.length) {
-                    progressText.textContent = "You have everything you need! 🎉";
-                } else {
-                    progressText.textContent = summary;
-                }
+                progressText.textContent = summary;
             });
 
             label.appendChild(checkbox);
@@ -1202,11 +1346,11 @@ document.addEventListener("DOMContentLoaded", function () {
         progressText.className = "ingredient-progress-text";
         progressText.textContent = `0 / ${ingredients.length} ingredients — 0%`;
 
-        ingredientProgress.appendChild(checklist);
-        ingredientProgress.appendChild(progressTrack);
         ingredientProgress.appendChild(progressText);
+        ingredientProgress.appendChild(progressTrack);
+        ingredientProgress.appendChild(checklist);
 
-        card.appendChild(ingredientProgress);
+        ingredientsDetails.appendChild(ingredientProgress);
     }
 
     function renderRecipeCard(recipe) {
@@ -1233,12 +1377,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const categoryClass = getCategoryClass(recipe.category);
         const categoryName = getCategoryLabel(recipe.category);
-        const ingredientMarkup = recipe.ingredients
-            .map(function (ingredient) {
-                return `<li>${escapeHtml(ingredient)}</li>`;
-            })
-            .join("");
-
         const instructionMarkup = recipe.instructions
             .map(function (step, index) {
                 return `<li>${escapeHtml(step)}</li>`;
@@ -1278,12 +1416,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 <details class="recipe-details" open>
                     <summary>🧾 Ingredients</summary>
-                    <ul>${ingredientMarkup}</ul>
                 </details>
 
                 <details class="recipe-details">
                     <summary>📋 Instructions</summary>
-                    <ol>${instructionMarkup}</ol>
+                    <ol class="instruction-list">${instructionMarkup}</ol>
                 </details>
             </div>
         `;
@@ -1369,11 +1506,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             try {
                 if (imageUploadInput && imageUploadInput.files && imageUploadInput.files[0]) {
-                    try {
-                        finalImageUrl = await uploadRecipeImageToStorage(imageUploadInput.files[0]);
-                    } catch (error) {
-                        console.error("Image upload failed:", error);
-                    }
+                    finalImageUrl = await uploadRecipeImageToCloudinary(
+                        imageUploadInput.files[0],
+                        optimizedImageData
+                    );
                 }
 
                 const newRecipe = {
@@ -1407,17 +1543,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
                     savedRecipe = updatedRecipe;
                 } else {
-                    savedRecipe = await saveRecipeToFirestore(newRecipe);
+                    // Keep this ID on the form until success so a retry reuses the same Firestore document.
+                    const submissionId = addRecipeForm.dataset.submissionId || createRecipeIdempotencyKey();
+                    addRecipeForm.dataset.submissionId = submissionId;
+                    savedRecipe = await saveRecipeToFirestore(newRecipe, submissionId);
                 }
 
-                setRecipeSaveState(false, "Recipe saved!", "success");
+                setRecipeSaveState(false, "Recipe saved successfully ✓", "success");
                 renderRecipeCard(savedRecipe);
 
                 window.setTimeout(function () {
                     addRecipeForm.reset();
                     addRecipeForm.dataset.editingRecipeId = "";
+                    addRecipeForm.dataset.submissionId = "";
                     addRecipeForm.dataset.isSubmitting = "false";
                     uploadedImageDataUrl = "";
+                    optimizedImageData = null;
                     clearPreviewImage();
                     ingredientList.innerHTML = "";
                     instructionList.innerHTML = "";
@@ -1429,10 +1570,15 @@ document.addEventListener("DOMContentLoaded", function () {
                     closeRecipeModal();
                 }, 700);
             } catch (error) {
-                console.error("Failed to save recipe to Firestore:", error);
+                console.error("Recipe save failed. Detailed error:", {
+                    code: error.code || "unknown",
+                    name: error.name || "Error",
+                    message: error.message || String(error),
+                    error: error
+                });
                 addRecipeForm.dataset.isSubmitting = "false";
-                setRecipeSaveState(false, error.message || "The recipe could not be saved to the database. Please try again.", "error");
-                setAddRecipeError(error.message || "The recipe could not be saved to the database. Please try again.");
+                setRecipeSaveState(false, "Unable to save recipe. Please try again.", "error");
+                setAddRecipeError("Unable to save recipe. Please try again.");
             }
         });
     }
@@ -1469,15 +1615,20 @@ document.addEventListener("DOMContentLoaded", function () {
     applyRecipeFilters();
 
     async function initializeFirestoreRecipes() {
-        const savedRecipes = await loadRecipesFromFirestore();
+        if (!firebaseAuth || !firebaseAuth.currentUser) return;
 
-        savedRecipes.forEach(function (recipe) {
-            renderRecipeCard(recipe);
-        });
+        try {
+            const savedRecipes = await loadRecipesFromFirestore();
 
-        applyRecipeFilters();
+            savedRecipes.forEach(function (recipe) {
+                renderRecipeCard(recipe);
+            });
+
+            applyRecipeFilters();
+        } catch (error) {
+            console.error("Failed to load fresh recipes from Firestore:", error);
+        }
+
     }
-
-    initializeFirestoreRecipes();
 
 });
