@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Culinary Arts</title>
-  <link rel="stylesheet" href="desktop.css">
+  <link rel="stylesheet" href="css/culinary-arts.css?v=20261010-organized">
 </head>
 <body class="retro-page">
   <div class="retro-shell">
@@ -33,17 +33,6 @@
     </footer>
   </div>
 
-  <script>
-    function updateClock() {
-      const clock = document.getElementById('desktop-clock');
-      if (!clock) return;
-      const now = new Date();
-      const time = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-      clock.textContent = time;
-    }
-
-    updateClock();
-    setInterval(updateClock, 60000);
-  </script>
+  <script src="js/culinary-arts.js"></script>
 </body>
 </html>

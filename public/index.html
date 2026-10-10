@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Windows 97 Desktop</title>
   <meta name="description" content="Retro Windows 97-inspired desktop landing page for the recipe site.">
-  <link rel="stylesheet" href="desktop.css">
+  <link rel="stylesheet" href="css/index.css?v=20261010-organized">
 </head>
 <body class="retro-page">
   <div class="retro-shell">
@@ -31,17 +31,6 @@
     </footer>
   </div>
 
-  <script>
-    function updateClock() {
-      const clock = document.getElementById('desktop-clock');
-      if (!clock) return;
-      const now = new Date();
-      const time = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
-      clock.textContent = time;
-    }
-
-    updateClock();
-    setInterval(updateClock, 60000);
-  </script>
+  <script src="js/index.js"></script>
 </body>
 </html>

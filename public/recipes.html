@@ -14,7 +14,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=20261010-layout">
+    <link rel="stylesheet" href="css/recipes.css?v=20261010-organized">
 
     <!-- =========================================================
          FIREBASE SETUP
@@ -26,24 +26,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-analytics-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyDnPbG1EsmmMWVVQA1W2h9nnfgN_JLG5c8",
-            authDomain: "recipes-eaa45.firebaseapp.com",
-            projectId: "recipes-eaa45",
-            messagingSenderId: "597807539706",
-            appId: "1:597807539706:web:8a374fb8b315f5db1e7043",
-            measurementId: "G-C80L2QYBFR"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-
-        window.firebaseApp = firebase.app();
-        window.firebaseAnalytics = firebase.analytics();
-        window.firebaseAuth = firebase.auth();
-    </script>
-
-    <script src="javascript.js"></script>
+    <script src="js/firebase-config.js"></script>
+    <script src="js/recipes.js"></script>
 </head>
 
 <body>
