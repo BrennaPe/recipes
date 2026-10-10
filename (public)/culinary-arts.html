@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Culinary Arts</title>
+  <link rel="stylesheet" href="desktop.css">
+</head>
+<body class="retro-page">
+  <div class="retro-shell">
+    <main class="desktop-grid">
+      <div class="window-shell" role="dialog" aria-labelledby="culinary-title">
+        <div class="window-title" id="culinary-title">Culinary Arts - Placeholder</div>
+        <div class="window-body">
+          <h1>Culinary Arts</h1>
+          <p>
+            This section is still under construction. The retro desktop navigation is in place and
+            the next iteration will add the full culinary experience here.
+          </p>
+          <div class="window-actions">
+            <a class="retro-button" href="index.html">Back to Desktop</a>
+            <a class="retro-button secondary" href="recipes.html">Open Recipes</a>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <footer class="taskbar" aria-label="System taskbar">
+      <button class="start-button" type="button" aria-label="Start">Start</button>
+      <div class="taskbar-divider" aria-hidden="true"></div>
+      <div class="taskbar-message">Culinary Arts</div>
+      <div class="taskbar-clock" id="desktop-clock">--:--</div>
+    </footer>
+  </div>
+
+  <script>
+    function updateClock() {
+      const clock = document.getElementById('desktop-clock');
+      if (!clock) return;
+      const now = new Date();
+      const time = now.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+      clock.textContent = time;
+    }
+
+    updateClock();
+    setInterval(updateClock, 60000);
+  </script>
+</body>
+</html>

@@ -1614,6 +1614,310 @@ document.addEventListener("DOMContentLoaded", function () {
     enhanceExistingRecipeCards();
     applyRecipeFilters();
 
+    function closeRecipePopup() {
+        const popup = document.querySelector(".recipe-modal-overlay");
+        if (!popup) return;
+
+        if (popup._keydownHandler) {
+            document.removeEventListener("keydown", popup._keydownHandler);
+            popup._keydownHandler = null;
+        }
+
+        popup.remove();
+    }
+
+    function getRecipePopupData(card) {
+        const title = card.querySelector("h3")?.textContent.trim() || "Recipe";
+        const description = card.querySelector(".recipe-description")?.textContent.trim() || "";
+        const image = card.querySelector(".recipe-image img")?.getAttribute("src") || "";
+        const section = card.closest(".recipe-section");
+        const categoryKey = section ? section.id : "savory";
+
+        const metaSpans = Array.from(card.querySelectorAll(".recipe-meta span"));
+        const prepText = metaSpans[0] ? metaSpans[0].textContent.replace(/⏱|[^a-zA-Z0-9 ]/g, "").trim() : "30 min";
+        const servingsText = metaSpans[1] ? metaSpans[1].textContent.replace(/👥|[^0-9]/g, "").trim() : "2";
+        const difficultyText = metaSpans[2] ? metaSpans[2].textContent.replace(/⭐|[^a-zA-Z]/g, "").trim() : "Easy";
+
+        const caloriesText = card.querySelector(".nutrition-calories strong")?.textContent.trim() || "0";
+        const calories = Number.parseFloat(caloriesText.replace(/[^0-9.]/g, "")) || 0;
+
+        const nutritionMap = {};
+        Array.from(card.querySelectorAll(".nutrition-row")).forEach(function (row) {
+            const label = row.querySelector("span")?.textContent.trim().toLowerCase() || "";
+            const value = row.querySelector("strong")?.textContent.trim() || "0";
+            if (label) {
+                nutritionMap[label] = value;
+            }
+        });
+
+        const ingredients = Array.from(card.querySelectorAll(".ingredient-item span")).map(function (item) {
+            return item.textContent.trim();
+        }).filter(Boolean);
+
+        const instructions = Array.from(card.querySelectorAll(".recipe-details ol li")).map(function (item) {
+            return item.textContent.trim();
+        }).filter(Boolean);
+
+        return {
+            title: title,
+            description: description,
+            image: image,
+            categoryKey: categoryKey,
+            category: categoryKey.replace(/-/g, " ").replace(/\b\w/g, function (char) {
+                return char.toUpperCase();
+            }),
+            prepTime: prepText,
+            servings: servingsText,
+            difficulty: difficultyText,
+            calories: calories,
+            protein: Number.parseFloat((nutritionMap.protein || "0").replace(/[^0-9.]/g, "")) || 0,
+            carbs: Number.parseFloat((nutritionMap.carbohydrates || "0").replace(/[^0-9.]/g, "")) || 0,
+            fat: Number.parseFloat((nutritionMap.fat || "0").replace(/[^0-9.]/g, "")) || 0,
+            fiber: Number.parseFloat((nutritionMap.fiber || "0").replace(/[^0-9.]/g, "")) || 0,
+            ingredients: ingredients,
+            instructions: instructions
+        };
+    }
+
+    function openRecipePopup(card) {
+        if (!card) return;
+
+        const existingPopup = document.querySelector(".recipe-modal-overlay");
+        if (existingPopup) {
+            existingPopup.remove();
+        }
+
+        const popupData = getRecipePopupData(card);
+        const popup = document.createElement("div");
+        popup.className = "recipe-modal-overlay";
+        popup.setAttribute("role", "dialog");
+        popup.setAttribute("aria-modal", "true");
+        popup.setAttribute("aria-label", `${popupData.title} recipe details`);
+
+        const ingredientMarkup = popupData.ingredients.map(function (ingredient) {
+            return `
+                <label class="recipe-popup-ingredient">
+                    <input type="checkbox" aria-label="${escapeHtml(ingredient)}">
+                    <span>${escapeHtml(ingredient)}</span>
+                </label>
+            `;
+        }).join("");
+
+        const instructionsMarkup = popupData.instructions.map(function (step, index) {
+            return `
+                <li class="recipe-popup-step">
+                    <span class="recipe-popup-step-number">${index + 1}</span>
+                    <span>${escapeHtml(step)}</span>
+                </li>
+            `;
+        }).join("");
+
+        popup.innerHTML = `
+            <div class="recipe-modal-window">
+                <div class="recipe-modal-header">
+                    <div class="recipe-modal-title-wrap">
+                        <span class="recipe-modal-control-left">◫</span>
+                        <span class="recipe-modal-badge">📄</span>
+                        <span>${escapeHtml(popupData.title)}</span>
+                    </div>
+                    <button type="button" class="recipe-modal-close" aria-label="Close recipe details">×</button>
+                </div>
+
+                <div class="recipe-modal-body">
+                    <div class="recipe-modal-top">
+                        <div class="recipe-modal-image-wrap">
+                            <img src="${escapeHtml(popupData.image)}" alt="${escapeHtml(popupData.title)}">
+                        </div>
+
+                        <div class="recipe-modal-info">
+                            <h2>${escapeHtml(popupData.title)}</h2>
+                            <p>${escapeHtml(popupData.description || "A delicious recipe from your collection.")}</p>
+
+                            <div class="recipe-stat-grid">
+                                <div class="recipe-stat-box">
+                                    <span>Prep</span>
+                                    <strong>${escapeHtml(popupData.prepTime)}</strong>
+                                </div>
+                                <div class="recipe-stat-box">
+                                    <span>Servings</span>
+                                    <strong>${escapeHtml(popupData.servings)}</strong>
+                                </div>
+                                <div class="recipe-stat-box">
+                                    <span>Difficulty</span>
+                                    <strong>${escapeHtml(popupData.difficulty)}</strong>
+                                </div>
+                                <div class="recipe-stat-box">
+                                    <span>Category</span>
+                                    <strong>${escapeHtml(popupData.category)}</strong>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recipe-modal-panels">
+                        <section class="recipe-panel">
+                            <div class="recipe-panel-header">
+                                <span>Ingredients</span>
+                                <span>${popupData.ingredients.length} items</span>
+                            </div>
+                            <div class="recipe-panel-body">
+                                <div class="recipe-progress-meta">
+                                    <span>Ingredients: 0 / ${popupData.ingredients.length} completed</span>
+                                    <span class="recipe-progress-percent">0%</span>
+                                </div>
+                                <div class="recipe-progress-track">
+                                    <span class="recipe-progress-fill"></span>
+                                </div>
+
+                                <div class="recipe-popup-ingredient-list">
+                                    ${ingredientMarkup || "<p>No ingredients listed.</p>"}
+                                </div>
+                            </div>
+                        </section>
+
+                        <aside class="recipe-panel nutrition-panel">
+                            <div class="recipe-panel-header">
+                                <span>Nutrition Facts</span>
+                                <span>Per serving</span>
+                            </div>
+                            <div class="recipe-panel-body">
+                                <div class="nutrition-header-row">
+                                    <span>Calories</span>
+                                    <strong>${escapeHtml(String(popupData.calories))}</strong>
+                                </div>
+                                <div class="nutrition-row">
+                                    <span>Protein</span>
+                                    <strong>${escapeHtml(`${popupData.protein}g`)}</strong>
+                                </div>
+                                <div class="nutrition-row">
+                                    <span>Total Carbohydrate</span>
+                                    <strong>${escapeHtml(`${popupData.carbs}g`)}</strong>
+                                </div>
+                                <div class="nutrition-row">
+                                    <span>Total Fat</span>
+                                    <strong>${escapeHtml(`${popupData.fat}g`)}</strong>
+                                </div>
+                                <div class="nutrition-row">
+                                    <span>Dietary Fibre</span>
+                                    <strong>${escapeHtml(`${popupData.fiber}g`)}</strong>
+                                </div>
+                                <div class="nutrition-row">
+                                    <span>Values</span>
+                                    <strong>Estimates</strong>
+                                </div>
+                            </div>
+                        </aside>
+                    </div>
+
+                    <section class="recipe-panel recipe-instructions-panel">
+                        <div class="recipe-panel-header">
+                            <span>Instructions</span>
+                            <span>${popupData.instructions.length} steps</span>
+                        </div>
+                        <div class="recipe-panel-body">
+                            <ol class="recipe-popup-steps">
+                                ${instructionsMarkup || "<li>No instructions available.</li>"}
+                            </ol>
+                        </div>
+                    </section>
+
+                    <div class="recipe-popup-actions">
+                        <button type="button" class="recipe-popup-edit">Edit Recipe</button>
+                        <button type="button" class="recipe-popup-delete">Delete Recipe</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        const root = document.getElementById("recipe-popup-root");
+        if (root) {
+            root.appendChild(popup);
+        } else {
+            document.body.appendChild(popup);
+        }
+
+        const closeButton = popup.querySelector(".recipe-modal-close");
+        if (closeButton) {
+            closeButton.addEventListener("click", closeRecipePopup);
+        }
+
+        popup.addEventListener("click", function (event) {
+            if (event.target === popup) {
+                closeRecipePopup();
+            }
+        });
+
+        const keydownHandler = function (event) {
+            if (event.key === "Escape") {
+                closeRecipePopup();
+            }
+        };
+
+        popup._keydownHandler = keydownHandler;
+        document.addEventListener("keydown", keydownHandler);
+
+        const ingredientCheckboxes = popup.querySelectorAll("input[type='checkbox']");
+        const progressFill = popup.querySelector(".recipe-progress-fill");
+        const progressPercent = popup.querySelector(".recipe-progress-percent");
+        const progressMeta = popup.querySelector(".recipe-progress-meta span");
+
+        function updateIngredientProgress() {
+            const total = ingredientCheckboxes.length;
+            if (!total) {
+                if (progressFill) progressFill.style.width = "0%";
+                if (progressPercent) progressPercent.textContent = "0%";
+                if (progressMeta) progressMeta.textContent = "Ingredients: 0 / 0 completed";
+                return;
+            }
+
+            const checkedCount = Array.from(ingredientCheckboxes).filter(function (checkbox) {
+                return checkbox.checked;
+            }).length;
+
+            const percent = Math.round((checkedCount / total) * 100);
+            if (progressFill) progressFill.style.width = `${percent}%`;
+            if (progressPercent) progressPercent.textContent = `${percent}%`;
+            if (progressMeta) progressMeta.textContent = `Ingredients: ${checkedCount} / ${total} completed`;
+        }
+
+        ingredientCheckboxes.forEach(function (checkbox) {
+            checkbox.addEventListener("change", updateIngredientProgress);
+        });
+
+        popup.querySelector(".recipe-popup-edit")?.addEventListener("click", function () {
+            const editButton = card.querySelector(".recipe-edit-button");
+            if (editButton) {
+                closeRecipePopup();
+                editButton.click();
+            }
+        });
+
+        popup.querySelector(".recipe-popup-delete")?.addEventListener("click", function () {
+            const deleteButton = card.querySelector(".recipe-delete-button");
+            if (deleteButton) {
+                closeRecipePopup();
+                deleteButton.click();
+            }
+        });
+
+        updateIngredientProgress();
+    }
+
+    document.addEventListener("click", function (event) {
+        const card = event.target.closest(".recipe-card");
+        if (!card) return;
+
+        if (event.target.closest(".recipe-edit-button") || event.target.closest(".recipe-delete-button")) {
+            return;
+        }
+
+        if (document.querySelector(".recipe-modal-overlay")) {
+            return;
+        }
+
+        openRecipePopup(card);
+    });
+
     async function initializeFirestoreRecipes() {
         if (!firebaseAuth || !firebaseAuth.currentUser) return;
 
