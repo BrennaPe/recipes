@@ -605,6 +605,16 @@ document.addEventListener("DOMContentLoaded", function () {
     const addRecipeStatus = document.getElementById("add-recipe-status");
     const saveRecipeButton = document.getElementById("save-recipe-button");
 
+    document.addEventListener("click", function (event) {
+        const closeButton = event.target.closest(".content-window .panel-controls button");
+        if (!closeButton || closeButton.textContent.trim() !== "×") return;
+
+        const panel = closeButton.closest(".content-window");
+        if (panel) {
+            panel.hidden = true;
+        }
+    });
+
     function setRecipeSaveState(isSaving, message, type) {
         if (saveRecipeButton) {
             saveRecipeButton.disabled = isSaving;
