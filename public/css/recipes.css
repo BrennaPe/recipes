@@ -3149,7 +3149,7 @@ select {
 
 .recipe-progress-fill {
     display: block !important;
-    width: 0% !important;
+    width: 0%;
     height: 100% !important;
     background: linear-gradient(90deg, #dfe8ff 0%, #5f7cc9 100%) !important;
 }

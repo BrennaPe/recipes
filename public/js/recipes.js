@@ -1265,7 +1265,8 @@ document.addEventListener("DOMContentLoaded", function () {
         const categoryMap = {
             savory: "🥗 SAVORY",
             sweet: "🍰 SWEET",
-            "high-protein": "💪 HIGH PROTEIN"
+            "high-protein": "💪 HIGH PROTEIN",
+            components: "🧩 COMPONENTS"
         };
 
         return categoryMap[categoryValue] || "🥗 SAVORY";
